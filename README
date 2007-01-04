@@ -1,4 +1,4 @@
-Crypt/OpenSSL/X509 version 0.3
+Crypt/OpenSSL/X509 version 0.4
 ===============================
 
 The README is used to introduce the module and provide instructions on
@@ -25,13 +25,13 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-  blah blah blah
+  OpenSSL Development Libs
 
 COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
 
-Copyright (C) 2004 Daniel Sully
+Copyright (C) 2004-2007 Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 

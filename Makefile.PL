@@ -1,14 +1,13 @@
-use 5.00503;
-use ExtUtils::MakeMaker;
+# $Id: Makefile.PL 10 1998-12-16 23:02:45Z daniel $
 
-WriteMakefile(
-	'NAME'		=> 'Crypt::OpenSSL::X509',
-	'VERSION_FROM'	=> 'X509.pm',
-	'PREREQ_PM'		=> {},
-	($] >= 5.005 ?
-	(ABSTRACT_FROM => 'X509.pm',
-	AUTHOR     => 'Dan Sully <daniel@cpan.org>') : ()),
-	'LIBS'		=> ['-lcrypto'],
-	'DEFINE'	=> '-DPERL5 -Wall',
-	'INC'		=> '',
-);
+use inc::Module::Install;
+
+name('Crypt-OpenSSL-X509');
+license('perl');
+perl_version('5.005');
+all_from('X509.pm');
+
+cc_lib_links('crypto');
+
+auto_install();
+WriteAll();

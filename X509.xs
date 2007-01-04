@@ -65,7 +65,9 @@ static SV* sv_bio_final(BIO *bio) {
 	sv = (SV *)BIO_get_callback_arg(bio);
 	BIO_free_all(bio);
 
-	if (!sv) sv = &PL_sv_undef;
+	if (!sv) {
+		sv = &PL_sv_undef;
+	}
 
 	return sv;
 }
@@ -233,7 +235,7 @@ accessor(x509)
 		}
 
 		/* this is prefered over X509_NAME_oneline() */
-		X509_NAME_print_ex(bio, name, 0, 0);
+		X509_NAME_print_ex(bio, name, 0, XN_FLAG_SEP_CPLUS_SPC);
 
 	} else if (ix == 3) {
 
@@ -360,7 +362,8 @@ fingerprint_md5(x509)
 
         const EVP_MD *mds[] = { EVP_md5(), EVP_md2(), EVP_sha1() };
 	unsigned char md[EVP_MAX_MD_SIZE];
-        int n, i;
+        int i;
+	unsigned int n;
 	BIO *bio;
 
 	CODE:
@@ -381,7 +384,7 @@ fingerprint_md5(x509)
 	OUTPUT:
 	RETVAL
 
-IV
+SV*
 checkend(x509, checkoffset)
 	Crypt::OpenSSL::X509 x509;
 	IV checkoffset;
@@ -395,9 +398,9 @@ checkend(x509, checkoffset)
 
 	/* given an offset in seconds, will the certificate be expired? */
 	if (ASN1_UTCTIME_cmp_time_t(X509_get_notAfter(x509), now + (int)checkoffset) == -1) {
-		RETVAL = (IV)&PL_sv_yes;
+		RETVAL = &PL_sv_yes;
 	} else {
-		RETVAL = (IV)&PL_sv_no;
+		RETVAL = &PL_sv_no;
 	}
 
 	OUTPUT:

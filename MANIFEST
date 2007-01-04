@@ -5,8 +5,24 @@ README
 X509.pm
 X509.xs
 TODO
-test.pl
+t/pod.t
+t/x509.t
 typemap
 certs/thawte.pem
 certs/vsign1.pem
 META.yml                                 Module meta-data (added by MakeMaker)
+inc
+inc/Module
+inc/Module/Install.pm
+inc/Module/Install
+inc/Module/Install/Metadata.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Compiler.pm
+inc/Module/Install/Makefile.pm
+inc/Module/Install/AutoInstall.pm
+inc/Module/Install/Include.pm
+inc/Module/Install/WriteAll.pm
+inc/Module/Install/Win32.pm
+inc/Module/Install/Can.pm
+inc/Module/Install/Fetch.pm
+inc/Module/AutoInstall.pm
