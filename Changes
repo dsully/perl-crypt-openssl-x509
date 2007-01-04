@@ -1,0 +1,29 @@
+Revision history for Perl extension Crypt::OpenSSL::X509.
+
+0.3.1  Mon Nov 22 23:20:43 PST 2004
+
+	- Patch from Daniel Risacher to add an email() method & doc additions.
+
+	- Remove newline from hash() accessor.
+
+0.3   Mon Oct  4 12:38:34 PDT 2004
+
+	- Patch from Otmar Lendl to remove NULL on fingerprint.
+
+0.2   Fri Jan 30 11:36:36 PST 2004
+
+	- Handle ASN1/DER input.
+	
+	- Additional headers and cleanup.
+
+0.1   Thu Jan 29 17:01:38 PST 2004
+
+	- Initial release.
+
+	- Interoperates with Crypt::OpenSSL::Bignum & Crypt::OpenSSL::RSA
+
+
+0.01  Wed Jan 28 15:53:18 2004
+	- original version; created by h2xs 1.22 with options
+		-O -b 5.5.3 -a -k --skip-ppport --skip-warnings -c -n Crypt::OpenSSL::X509
+
