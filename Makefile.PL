@@ -8,6 +8,7 @@ perl_version('5.005');
 all_from('X509.pm');
 
 cc_lib_links('crypto');
+cc_optimize_flags('-g -Wall');
 
 auto_install();
 WriteAll();

@@ -46,7 +46,7 @@ long bio_write_cb(struct bio_st *bm, int m, const char *ptr, int l, long x, long
 
 static BIO* sv_bio_create(void) {
 
-        SV *sv = newSVpvn("",0);
+        SV *sv = newSVpvn("", 0);
 
 	/* create an in-memory BIO abstraction and callbacks */
         BIO *bio = BIO_new(BIO_s_mem());
@@ -64,10 +64,6 @@ static SV* sv_bio_final(BIO *bio) {
 	BIO_flush(bio);
 	sv = (SV *)BIO_get_callback_arg(bio);
 	BIO_free_all(bio);
-
-	if (!sv) {
-		sv = &PL_sv_undef;
-	}
 
 	return sv;
 }
@@ -322,12 +318,13 @@ modulus(x509)
 	CODE:
 
 	pkey = X509_get_pubkey(x509);
-
 	bio  = sv_bio_create();
 
 	if (pkey == NULL) {
+
+		BIO_free_all(bio);
+		EVP_PKEY_free(pkey);
 		croak("Modulus is unavailable\n");
-		XSRETURN_UNDEF;
 	}
 
 	if (pkey->type == EVP_PKEY_RSA) {
@@ -340,6 +337,8 @@ modulus(x509)
 
 	} else {
 
+		BIO_free_all(bio);
+		EVP_PKEY_free(pkey);
 		croak("Wrong Algorithm type\n");
 	}
 
@@ -371,6 +370,8 @@ fingerprint_md5(x509)
 	bio  = sv_bio_create();
 
 	if (!X509_digest(x509, mds[ix], md, &n)) {
+
+		BIO_free_all(bio);
 		croak("Digest error: %s", ssl_error());
 	}
 
@@ -420,8 +421,10 @@ pubkey(x509)
 	bio  = sv_bio_create();
 
 	if (pkey == NULL) {
+
+		BIO_free_all(bio);
+		EVP_PKEY_free(pkey);
 		croak("Public Key is unavailable\n");
-		XSRETURN_UNDEF;
 	}
 
 	if (pkey->type == EVP_PKEY_RSA) {
@@ -434,12 +437,14 @@ pubkey(x509)
 
 	} else {
 
+		BIO_free_all(bio);
+		EVP_PKEY_free(pkey);
 		croak("Wrong Algorithm type\n");
 	}
 
-	RETVAL = sv_bio_final(bio);
-
 	EVP_PKEY_free(pkey);
+
+	RETVAL = sv_bio_final(bio);
 
 	OUTPUT:
 	RETVAL
