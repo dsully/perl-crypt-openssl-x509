@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+0.4.1  Sat Jun  2 11:12:03 PDT 2007
+
+	- Fix manifest.
+
 0.4    Wed Jan  3 17:19:10 PST 2007
 
 	- RT #13861 - patch from dsteinwand@citysearch.com
