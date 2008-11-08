@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+0.8    Sat Nov  8 15:40:02 PST 2008
+	- Fix error message.
+
 0.7    Sat May 17 00:49:28 PDT 2008
 	- Stop cpansmoke if libcrypto isn't installed.
 
