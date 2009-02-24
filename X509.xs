@@ -3,6 +3,7 @@
 #include "XSUB.h"
 
 #include <openssl/asn1.h>
+#include <openssl/objects.h>
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
@@ -26,6 +27,10 @@
 
 /* fake our package name */
 typedef X509*	Crypt__OpenSSL__X509;
+typedef X509_EXTENSION* Crypt__OpenSSL__X509__Extension;
+typedef ASN1_OBJECT* Crypt__OpenSSL__X509__ObjectID;
+typedef X509_NAME* Crypt__OpenSSL__X509__Name;
+typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
 
 /* stolen from OpenSSL.xs */
 long bio_write_cb(struct bio_st *bm, int m, const char *ptr, int l, long x, long y) {
@@ -90,6 +95,58 @@ static const char *ssl_error(void) {
 	return SvPV(sv, l);
 }
 
+// Make a scalar ref to a class object
+static SV* sv_make_ref(const char* class, void* object) {
+    SV* rv;
+
+    rv = newSV(0);
+    sv_setref_pv(rv, class, (void*) object);
+    if (! sv_isa(rv, class) ){
+       croak("Error creating reference to %s", class);
+    }
+    return rv;
+}
+
+/*
+ * hash of extensions from x509.
+ * no_name can be
+ *  0: index by long name,
+ *  1: index by oid string,
+ *  2: index by short name
+*/
+static HV* hv_exts(X509* x509, int no_name) {
+    X509_EXTENSION *ext;
+    int i, c, r;
+    size_t len = 128;
+    char* key;
+    SV* rv;
+
+    HV* RETVAL = newHV();
+    sv_2mortal((SV*)RETVAL);
+    c = X509_get_ext_count(x509);
+    if ( ! c > 0 ) {
+        croak("No extensions found\n");
+    }
+    for(i = 0; i < c; i++) {
+        r = 0;
+
+        ext = X509_get_ext(x509, i);
+        if (ext == NULL) croak("Extension %d unavailable\n", i);
+        rv = sv_make_ref("Crypt::OpenSSL::X509::Extension", (void*)ext);
+        if(no_name == 0 || no_name == 1) {
+           key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
+           r = OBJ_obj2txt(key, len, ext->object, no_name);
+        } else if (no_name == 2) {
+           key = OBJ_nid2sn(OBJ_obj2nid(ext->object));
+           r = strlen(key);
+        }
+        if (! hv_store(RETVAL, key, r, rv, 0) ) croak("Error storing extension in hash\n");
+    }
+
+    return RETVAL;
+}
+
+
 MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509		
 
 PROTOTYPES: DISABLE
@@ -105,6 +162,7 @@ BOOT:
         ERR_load_X509_strings();
         ERR_load_DSA_strings();
         ERR_load_RSA_strings();
+        ERR_load_OBJ_strings();
 
 	HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
@@ -119,6 +177,8 @@ BOOT:
 	{"FORMAT_SMIME", FORMAT_SMIME},
 	{"FORMAT_ENGINE", FORMAT_ENGINE},
 	{"FORMAT_IISSGC", FORMAT_IISSGC},
+        {"V_ASN1_PRINTABLESTRING",  V_ASN1_PRINTABLESTRING},
+        {"V_ASN1_UTF8STRING",  V_ASN1_UTF8STRING},
 	{Nullch,0}};
 
 	char *name;
@@ -212,6 +272,8 @@ accessor(x509)
 	notBefore = 5
 	notAfter  = 6
 	email     = 7
+        version   = 8
+        sig_alg_name = 9
 
 	PREINIT:
 	BIO *bio;
@@ -221,7 +283,7 @@ accessor(x509)
 
 	bio = sv_bio_create();
 
-	/* this includes both serial and issuer since they are so much alike */
+	/* this includes both subject and issuer since they are so much alike */
         if (ix == 1 || ix == 2) {
 
 		if (ix == 1) {
@@ -259,12 +321,37 @@ accessor(x509)
 		}
 
 		X509_email_free(emlst);
-	}
+	} else if (ix == 8) {
+
+		i2a_ASN1_INTEGER(bio, x509->cert_info->version);
+
+	} else if (ix == 9) {
+                
+                i2a_ASN1_OBJECT(bio, x509->sig_alg->algorithm);
+        }
 
 	RETVAL = sv_bio_final(bio);
 
 	OUTPUT:
 	RETVAL
+
+Crypt::OpenSSL::X509::Name
+subject_name(x509)
+	Crypt::OpenSSL::X509 x509;
+
+	ALIAS:
+	subject_name = 1
+	issuer_name  = 2
+
+	CODE:
+        if (ix == 1) {
+            RETVAL = X509_get_subject_name(x509);
+        } else {
+            RETVAL = X509_get_issuer_name(x509);
+        }
+
+        OUTPUT:
+        RETVAL
 
 SV*
 as_string(x509, format = FORMAT_PEM)
@@ -448,3 +535,325 @@ pubkey(x509)
 
 	OUTPUT:
 	RETVAL
+
+int 
+num_extensions(x509)
+	Crypt::OpenSSL::X509 x509;
+    CODE:
+        RETVAL = X509_get_ext_count(x509);
+    OUTPUT:
+        RETVAL
+
+Crypt::OpenSSL::X509::Extension
+extension(x509, i)
+	Crypt::OpenSSL::X509 x509;
+        int i;
+
+	PREINIT:
+        X509_EXTENSION *ext;
+        int c;
+
+	CODE:
+        ext = NULL;
+        
+        c = X509_get_ext_count(x509);
+        if ( ! c > 0 ) {
+            croak("No extensions found\n");
+        } else if ( i >= c || i < 0) {
+            croak("Requested extension index out of range\n");
+        } else {
+            ext = X509_get_ext(x509, i);
+        }
+
+	if (ext == NULL) {
+            // X509_EXTENSION_free(ext); // not needed?
+            croak("Extension unavailable\n");
+	}
+
+	RETVAL = ext;
+
+	OUTPUT:
+	RETVAL
+
+HV*
+extensions(x509)
+        Crypt::OpenSSL::X509 x509
+    ALIAS:
+        extensions_by_long_name = 0
+        extensions_by_oid = 1
+        extensions_by_name = 2
+    CODE:
+        RETVAL = hv_exts(x509, ix);
+    OUTPUT:
+        RETVAL
+
+
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::Extension		
+
+int
+critical(ext)
+        Crypt::OpenSSL::X509::Extension ext;
+    
+	CODE:
+        
+	if (ext == NULL) {
+            croak("No extension supplied\n");
+	}
+
+	RETVAL = ext->critical;
+
+	OUTPUT:
+	RETVAL
+
+Crypt::OpenSSL::X509::ObjectID
+object(ext)
+        Crypt::OpenSSL::X509::Extension ext;
+    CODE:
+        
+	if (ext == NULL) {
+            croak("No extension supplied\n");
+	}
+
+        RETVAL = ext->object;
+    OUTPUT:
+	RETVAL
+
+
+SV*
+value(ext)
+        Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+        BIO* bio;
+    CODE:
+        bio  = sv_bio_create();
+        
+	if (ext == NULL) {
+            BIO_free_all(bio);
+            croak("No extension supplied\n");
+	}
+
+        ASN1_STRING_print(bio, ext->value);
+
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+	RETVAL
+
+
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::ObjectID
+char*
+name(obj)
+        Crypt::OpenSSL::X509::ObjectID obj;
+    PREINIT:
+        char buf[128];
+        int r;
+    CODE:
+	if (obj == NULL) {
+            croak("No ObjectID supplied\n");
+	}
+        r = OBJ_obj2txt(buf, 128, obj, 0);
+
+	RETVAL = buf;
+
+    OUTPUT:
+	RETVAL
+
+char*
+oid(obj)
+        Crypt::OpenSSL::X509::ObjectID obj;
+    PREINIT:
+        char buf[128];
+        int r;
+    CODE:
+	if (obj == NULL) {
+            croak("No ObjectID supplied\n");
+	}
+        r = OBJ_obj2txt(buf, 128, obj, 1);
+
+	RETVAL = buf;
+
+    OUTPUT:
+	RETVAL
+
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::Name
+
+
+SV*
+as_string(name)
+	Crypt::OpenSSL::X509::Name name;
+
+    PREINIT:
+	BIO *bio;
+
+    CODE:
+	bio = sv_bio_create();
+        /* this is prefered over X509_NAME_oneline() */
+        X509_NAME_print_ex(bio, name, 0, XN_FLAG_SEP_CPLUS_SPC);
+
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+	RETVAL
+
+AV* 
+entries(name)
+	Crypt::OpenSSL::X509::Name name;
+    PREINIT:
+        int i, c;
+        SV* rv;
+    CODE:
+        RETVAL = newAV();
+        sv_2mortal((SV*)RETVAL);
+
+        c = X509_NAME_entry_count(name);
+        for(i = 0; i < c; i++) {
+            rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)X509_NAME_get_entry(name, i));
+            av_push(RETVAL, rv);
+        }   
+
+    OUTPUT:
+        RETVAL
+
+int
+get_index_by_type(name, type, lastpos = -1)
+	Crypt::OpenSSL::X509::Name name;
+        const char* type;
+        int lastpos;
+        int ln;
+    ALIAS:
+        get_index_by_long_type = 1
+        has_entry = 2
+        has_long_entry = 3
+        has_oid_entry = 4
+        get_index_by_oid_type = 5
+    PREINIT:
+        int nid, i;
+    CODE:
+        if(ix == 1 || ix == 3) {
+            nid = OBJ_ln2nid(type);
+        } else if (ix == 4 || ix == 5) {
+            nid = OBJ_obj2nid(OBJ_txt2obj(type, /*oid*/ 1));
+        } else {
+            nid = OBJ_sn2nid(type);
+        }
+        if(!nid)
+            croak("Unknown type");
+
+        i = X509_NAME_get_index_by_NID(name, nid, lastpos);
+        if(ix == 2 || ix == 3 || ix == 4) { /* has_entry */
+            RETVAL = (i > lastpos)?1:0;
+        } else { /* get_index */
+            RETVAL = i;
+        }
+
+    OUTPUT:
+        RETVAL
+        
+Crypt::OpenSSL::X509::Name_Entry
+get_entry_by_type(name, type, lastpos = -1)
+	Crypt::OpenSSL::X509::Name name;
+        const char* type;
+        int lastpos;
+        int ln;
+    ALIAS:
+        get_entry_by_long_type = 1
+    PREINIT:
+        int nid, i;
+    CODE:
+        if(ix == 1) {
+            nid = OBJ_ln2nid(type);
+        } else {
+            nid = OBJ_sn2nid(type);
+        }
+        if(!nid)
+            croak("Unknown type");
+
+        i = X509_NAME_get_index_by_NID(name, nid, lastpos);
+        RETVAL = X509_NAME_get_entry(name, i);
+
+    OUTPUT:
+        RETVAL
+
+
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::Name_Entry
+
+SV*
+as_string(name_entry, ln = 0)
+	Crypt::OpenSSL::X509::Name_Entry name_entry;
+        int ln;
+
+    ALIAS:
+        as_long_string = 1
+    PREINIT:
+	BIO *bio;
+        char *n;
+        int nid;
+
+    CODE:
+	bio = sv_bio_create();
+        nid = OBJ_obj2nid(name_entry->object);
+        if(ix == 1 || ln) {
+            n = OBJ_nid2ln(nid);
+        } else {
+            n = OBJ_nid2sn(nid);
+        }
+        BIO_printf(bio, "%s=", n);
+        ASN1_STRING_print(bio, name_entry->value);
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+	RETVAL
+
+SV*
+type(name_entry, ln = 0)
+	Crypt::OpenSSL::X509::Name_Entry name_entry;
+        int ln;
+    ALIAS:
+        long_type = 1
+    PREINIT:
+	BIO *bio;
+        char *n;
+        int nid;
+
+    CODE:
+	bio = sv_bio_create();
+        nid = OBJ_obj2nid(name_entry->object);
+        if(ix == 1 || ln) {
+            n = OBJ_nid2ln(nid);
+        } else {
+            n = OBJ_nid2sn(nid);
+        }
+        BIO_printf(bio, "%s", n);
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+	RETVAL
+
+SV*
+value(name_entry)
+	Crypt::OpenSSL::X509::Name_Entry name_entry;
+
+    PREINIT:
+	BIO *bio;
+
+    CODE:
+	bio = sv_bio_create();
+        ASN1_STRING_print(bio, name_entry->value);
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+	RETVAL
+
+int
+is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
+        Crypt::OpenSSL::X509::Name_Entry name_entry;
+        int asn1_type;
+
+    ALIAS:
+        is_asn1_type = 1
+
+    CODE:
+        RETVAL = (name_entry->value->type == asn1_type);
+    
+    OUTPUT:
+        RETVAL
