@@ -306,6 +306,10 @@ Return a string representation of the value of the Name_Entry.
 
 =item is_printableString ( )
 
+=item is_ia5string ( )
+
+=item is_utf8string ( )
+
 =item is_asn1_type ( [ASN1_TYPE] )
 
 Return true if the Name_Entry value is of the specified type. The value of C<ASN1_TYPE> should be as listed in OpenSSL's C<asn1.h>.
@@ -319,10 +323,12 @@ OpenSSL(1), Crypt::OpenSSL::RSA, Crypt::OpenSSL::Bignum
 =head1 AUTHOR
 
 Dan Sully, E<lt>daniel@cpan.orgE<gt>
+with contributions from David O'Callaghan, E<lt>david.ocallaghan@cs.tcd.ieE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2004-2008 by Dan Sully
+and 2008-2009 by David O'Callaghan
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 

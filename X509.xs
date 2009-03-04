@@ -135,9 +135,9 @@ static HV* hv_exts(X509* x509, int no_name) {
         rv = sv_make_ref("Crypt::OpenSSL::X509::Extension", (void*)ext);
         if(no_name == 0 || no_name == 1) {
            key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
-           r = OBJ_obj2txt(key, len, ext->object, no_name);
+           r = OBJ_obj2txt(key, len, X509_EXTENSION_get_object(ext), no_name);
         } else if (no_name == 2) {
-           key = OBJ_nid2sn(OBJ_obj2nid(ext->object));
+           key = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
            r = strlen(key);
         }
         if (! hv_store(RETVAL, key, r, rv, 0) ) croak("Error storing extension in hash\n");
@@ -179,6 +179,7 @@ BOOT:
 	{"FORMAT_IISSGC", FORMAT_IISSGC},
         {"V_ASN1_PRINTABLESTRING",  V_ASN1_PRINTABLESTRING},
         {"V_ASN1_UTF8STRING",  V_ASN1_UTF8STRING},
+        {"V_ASN1_IA5STRING",  V_ASN1_IA5STRING},
 	{Nullch,0}};
 
 	char *name;
@@ -600,7 +601,7 @@ critical(ext)
             croak("No extension supplied\n");
 	}
 
-	RETVAL = ext->critical;
+	RETVAL = X509_EXTENSION_get_critical(ext);
 
 	OUTPUT:
 	RETVAL
@@ -614,7 +615,7 @@ object(ext)
             croak("No extension supplied\n");
 	}
 
-        RETVAL = ext->object;
+        RETVAL = X509_EXTENSION_get_object(ext);
     OUTPUT:
 	RETVAL
 
@@ -632,7 +633,7 @@ value(ext)
             croak("No extension supplied\n");
 	}
 
-        ASN1_STRING_print(bio, ext->value);
+        ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
 
 	RETVAL = sv_bio_final(bio);
 
@@ -791,14 +792,14 @@ as_string(name_entry, ln = 0)
 
     CODE:
 	bio = sv_bio_create();
-        nid = OBJ_obj2nid(name_entry->object);
+        nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(name_entry));
         if(ix == 1 || ln) {
             n = OBJ_nid2ln(nid);
         } else {
             n = OBJ_nid2sn(nid);
         }
         BIO_printf(bio, "%s=", n);
-        ASN1_STRING_print(bio, name_entry->value);
+        ASN1_STRING_print(bio, X509_NAME_ENTRY_get_data(name_entry));
 	RETVAL = sv_bio_final(bio);
 
     OUTPUT:
@@ -817,7 +818,7 @@ type(name_entry, ln = 0)
 
     CODE:
 	bio = sv_bio_create();
-        nid = OBJ_obj2nid(name_entry->object);
+        nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(name_entry));
         if(ix == 1 || ln) {
             n = OBJ_nid2ln(nid);
         } else {
@@ -838,7 +839,7 @@ value(name_entry)
 
     CODE:
 	bio = sv_bio_create();
-        ASN1_STRING_print(bio, name_entry->value);
+        ASN1_STRING_print(bio, X509_NAME_ENTRY_get_data(name_entry));
 	RETVAL = sv_bio_final(bio);
 
     OUTPUT:
@@ -851,9 +852,12 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
 
     ALIAS:
         is_asn1_type = 1
+        is_printableString = V_ASN1_PRINTABLESTRING
+        is_ia5string = V_ASN1_IA5STRING
+        is_utf8string = V_ASN1_UTF8STRING
 
     CODE:
-        RETVAL = (name_entry->value->type == asn1_type);
+        RETVAL = (X509_NAME_ENTRY_get_data(name_entry)->type == (ix==1?asn1_type:ix));
     
     OUTPUT:
         RETVAL

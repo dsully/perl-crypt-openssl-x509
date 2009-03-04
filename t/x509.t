@@ -1,5 +1,5 @@
 
-use Test::More tests => 35;
+use Test::More tests => 40;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -31,6 +31,13 @@ ok(my $exts = $x509->extensions_by_oid(), 'extension_by_oid()');
 ok($x509->has_extension_oid("2.5.29.19"), 'has_extension_oid(2.5.29.19)');
 
 is($$exts{"2.5.29.19"}->object()->name(),"X509v3 Basic Constraints", "Extension->object()->name()");
+
+ok($$exts{"2.5.29.19"}->is_critical(), "basic constraints is critical");
+
+ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
+ok(my $exts_b = $x509_b->extensions_by_name(), "extensions_by_name()");
+ok(not($$exts_b{'subjectKeyIdentifier'}->is_critical()), "subjectKeyIdentifier not critical");
+ok($$exts_b{'keyUsage'}->is_critical(), "keyUsage is critical");
 
 isa_ok($x509->subject_name(), "Crypt::OpenSSL::X509::Name", 'subject_name()');
 isa_ok($x509->issuer_name(), "Crypt::OpenSSL::X509::Name", 'issuer_name()');
