@@ -323,12 +323,14 @@ OpenSSL(1), Crypt::OpenSSL::RSA, Crypt::OpenSSL::Bignum
 =head1 AUTHOR
 
 Dan Sully, E<lt>daniel@cpan.orgE<gt>
-with contributions from David O'Callaghan, E<lt>david.ocallaghan@cs.tcd.ieE<gt>
+
+=head1 CONTRIBUTORS
+
+David O'Callaghan, E<lt>david.ocallaghan@cs.tcd.ieE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2008 by Dan Sully
-and 2008-2009 by David O'Callaghan
+Copyright 2004-2009 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
