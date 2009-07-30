@@ -641,6 +641,28 @@ value(ext)
 	RETVAL
 
 
+SV*
+to_string(ext)
+        Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+        BIO* bio;
+    CODE:
+        bio  = sv_bio_create();
+
+    if (ext == NULL) {
+            BIO_free_all(bio);
+            croak("No extension supplied\n");
+    }
+
+
+    X509V3_EXT_print(bio, ext, 0, 0);
+
+    RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+    RETVAL
+
+
 MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::ObjectID
 char*
 name(obj)
