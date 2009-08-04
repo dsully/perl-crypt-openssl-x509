@@ -626,14 +626,14 @@ value(ext)
     PREINIT:
         BIO* bio;
     CODE:
-        bio  = sv_bio_create();
+	bio  = sv_bio_create();
         
-	if (ext == NULL) {
-            BIO_free_all(bio);
-            croak("No extension supplied\n");
+  	if (ext == NULL) {
+	   BIO_free_all(bio);
+       croak("No extension supplied\n");
 	}
 
-        ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
+    ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
 
 	RETVAL = sv_bio_final(bio);
 
@@ -647,15 +647,60 @@ to_string(ext)
     PREINIT:
         BIO* bio;
     CODE:
-        bio  = sv_bio_create();
+    bio  = sv_bio_create();
 
     if (ext == NULL) {
-            BIO_free_all(bio);
-            croak("No extension supplied\n");
+       BIO_free_all(bio);
+       croak("No extension supplied\n");
     }
 
 
     X509V3_EXT_print(bio, ext, 0, 0);
+
+    RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+    RETVAL
+
+
+SV*
+basic_cons(ext)
+         Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+         BASIC_CONSTRAINTS *bs;
+         const X509V3_EXT_METHOD *method;
+         BIO *bio;
+    CODE:
+
+    bio = sv_bio_create();
+    method = X509V3_EXT_get(ext);
+    bs = X509V3_EXT_d2i(ext);
+    if(bs->ca)
+        BIO_printf(bio, "%d", 1);
+    else
+        BIO_printf(bio, "%d", 0);
+    BASIC_CONSTRAINTS_free(bs);
+
+    RETVAL = sv_bio_final(bio);
+    OUTPUT:
+    RETVAL
+
+
+SV*
+nscomment(ext)
+         Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+         const X509V3_EXT_METHOD *method;
+         ASN1_IA5STRING *nscomment;
+         char *str_nscomment;
+         BIO *bio;
+    CODE:
+    bio = sv_bio_create();
+
+    method = X509V3_EXT_get(ext);
+    nscomment = X509V3_EXT_d2i(ext);
+    BIO_printf(bio, nscomment->data);
+    ASN1_IA5STRING_free(nscomment);
 
     RETVAL = sv_bio_final(bio);
 
