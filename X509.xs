@@ -708,6 +708,26 @@ nscomment(ext)
     RETVAL
 
 
+SV*
+keyusage(ext)
+         Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+        BIO *bio;
+        int a, i;
+        ASN1_BIT_STRING *usage;
+    CODE:
+    bio = sv_bio_create();
+    usage = X509V3_EXT_d2i(ext);
+    for(i = 0; i <= 8; i++){
+        a = (int*)ASN1_BIT_STRING_get_bit(usage, i);
+        BIO_printf(bio, "%d", a);
+    }
+
+    RETVAL = sv_bio_final(bio);
+    OUTPUT:
+    RETVAL
+
+
 MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::ObjectID
 char*
 name(obj)
