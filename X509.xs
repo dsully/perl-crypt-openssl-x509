@@ -711,19 +711,22 @@ nscomment(ext)
 SV*
 keyusage(ext)
          Crypt::OpenSSL::X509::Extension ext;
+
     PREINIT:
         BIO *bio;
-        int a, i;
-        ASN1_BIT_STRING *usage;
+        int i;
+        ASN1_BIT_STRING *bit_str;
+        int key_usage[8];
     CODE:
     bio = sv_bio_create();
-    usage = X509V3_EXT_d2i(ext);
+    bit_str = X509V3_EXT_d2i(ext);
     for(i = 0; i <= 8; i++){
-        a = (int*)ASN1_BIT_STRING_get_bit(usage, i);
-        BIO_printf(bio, "%d", a);
+        key_usage[i] = (int*)ASN1_BIT_STRING_get_bit(bit_str, i);
+        BIO_printf(bio, "%d", key_usage[i]);
     }
 
     RETVAL = sv_bio_final(bio);
+
     OUTPUT:
     RETVAL
 
