@@ -32,6 +32,36 @@ sub Crypt::OpenSSL::X509::Extension::is_critical {
     return $crit?1:0;
 }
 
+sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
+	my $ext = shift;
+	my @bits = split(//, $ext->bit_string);
+	my $len = @bits;
+	my %bit_str_hash = ();
+	if($len == 8){    #bits for nsCertType
+		%bit_str_hash = (
+			'SSL Client' => $bits[0], 
+			'SSL Server' => $bits[1], 
+			'S/MIME' => $bits[2], 
+			'Object Signing' => $bits[3], 
+			'Unused' => $bits[4], 
+			'SSL CA' => $bits[5], 
+			'S/MIME CA' => $bits[6], 
+			'Object Signing CA' => $bits[7],);
+	}
+	elsif($len == 9){    #bits for keyUsage
+		%bit_str_hash = (
+			'Digital Signature' => $bits[0], 
+			'Non Repudiation' => $bits[1], 
+			'Key Encipherment' => $bits[2], 
+			'Data Encipherment' => $bits[3], 
+			'Key Agreement' => $bits[4], 
+			'Certificate Sign' => $bits[5], 
+			'CRL Sign' => $bits[6], 
+			'Encipher Only' => $bits[7], 
+			'Decipher Only' => $bits[8],);
+	}
+	return %bit_str_hash;
+}
 
 BOOT_XS: {
 	require DynaLoader;
