@@ -37,7 +37,19 @@ sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
 	my @bits = split(//, $ext->bit_string);
 	my $len = @bits;
 	my %bit_str_hash = ();
-	if($len == 8){    #bits for nsCertType
+	if($len == 9){    #bits for keyUsage
+        %bit_str_hash = (
+            'Digital Signature' => $bits[0],
+            'Non Repudiation' => $bits[1],
+            'Key Encipherment' => $bits[2],
+            'Data Encipherment' => $bits[3],
+            'Key Agreement' => $bits[4],
+            'Certificate Sign' => $bits[5],
+            'CRL Sign' => $bits[6],
+            'Encipher Only' => $bits[7],
+            'Decipher Only' => $bits[8],);
+	}
+	elsif($len == 8){    #bits for nsCertType
 		%bit_str_hash = (
 			'SSL Client' => $bits[0], 
 			'SSL Server' => $bits[1], 
@@ -48,18 +60,7 @@ sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
 			'S/MIME CA' => $bits[6], 
 			'Object Signing CA' => $bits[7],);
 	}
-	elsif($len == 9){    #bits for keyUsage
-		%bit_str_hash = (
-			'Digital Signature' => $bits[0], 
-			'Non Repudiation' => $bits[1], 
-			'Key Encipherment' => $bits[2], 
-			'Data Encipherment' => $bits[3], 
-			'Key Agreement' => $bits[4], 
-			'Certificate Sign' => $bits[5], 
-			'CRL Sign' => $bits[6], 
-			'Encipher Only' => $bits[7], 
-			'Decipher Only' => $bits[8],);
-	}
+
 	return %bit_str_hash;
 }
 

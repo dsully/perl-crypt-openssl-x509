@@ -728,13 +728,13 @@ bit_string(ext)
 	bit_str = X509V3_EXT_d2i(ext);
 	
 	if(nid == NID_key_usage){
-		for(i = 0; i <= 9; i++){
+		for(i = 0; i < 9; i++){
 		    attributes[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
 			BIO_printf(bio, "%d", attributes[i]);
 		}
 	}
 	else if(nid == NID_netscape_cert_type){
-		for(i = 0; i <= 8; i++){
+		for(i = 0; i < 8; i++){
 		  attributes[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
 		  BIO_printf(bio, "%d",  attributes[i]);
 		} 
