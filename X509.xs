@@ -673,6 +673,7 @@ basic_cons_ca(ext)
 		 int ret;
 
     CODE:
+	/* retrieve the value of CA in basicConstraints */
     method = X509V3_EXT_get(ext);
     bs = X509V3_EXT_d2i(ext);
 	if(bs->ca > 0)
@@ -697,7 +698,7 @@ ia5string(ext)
 		 BIO *bio;
 
     CODE:
-	/* For nsComment */
+	/* retrieving the value of an ia5string object */
 	bio = sv_bio_create();
 	str = X509V3_EXT_d2i(ext);
 	BIO_printf(bio,"%s", str->data);
@@ -717,7 +718,7 @@ bit_string(ext)
 		int i, nid;
 		ASN1_OBJECT *object;
 		ASN1_BIT_STRING *bit_str;
-        int attributes[10];
+        int string[10];
 		BIO *bio;
 
 	CODE:
@@ -729,14 +730,14 @@ bit_string(ext)
 	
 	if(nid == NID_key_usage){
 		for(i = 0; i < 9; i++){
-		    attributes[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-			BIO_printf(bio, "%d", attributes[i]);
+		    string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+			BIO_printf(bio, "%d", string[i]);
 		}
 	}
 	else if(nid == NID_netscape_cert_type){
 		for(i = 0; i < 8; i++){
-		  attributes[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-		  BIO_printf(bio, "%d",  attributes[i]);
+		  string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+		  BIO_printf(bio, "%d",  string[i]);
 		} 
 	}
 

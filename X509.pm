@@ -33,6 +33,7 @@ sub Crypt::OpenSSL::X509::Extension::is_critical {
 }
 
 sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
+	# return a hash for the values of keyUsage or nsCertType
 	my $ext = shift;
 	my @bits = split(//, $ext->bit_string);
 	my $len = @bits;
