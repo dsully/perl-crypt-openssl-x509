@@ -664,22 +664,30 @@ to_string(ext)
 
 
 int
-basic_cons_ca(ext)
+basicC(ext, value)
          Crypt::OpenSSL::X509::Extension ext;
-
+		 char *value;
     PREINIT:
          BASIC_CONSTRAINTS *bs;
          const X509V3_EXT_METHOD *method;
 		 int ret;
 
     CODE:
-	/* retrieve the value of CA in basicConstraints */
+	/* retrieve the value of CA or pathlen in basicConstraints */
     method = X509V3_EXT_get(ext);
     bs = X509V3_EXT_d2i(ext);
-	if(bs->ca > 0)
-	    ret = 1;
-	else
-		ret = 0;
+	if(strcmp(value, "ca") == 0){
+  	    if(bs->ca > 0)
+	        ret = 1;
+	    else
+		    ret = 0;
+	}
+    else if(strcmp(value, "pathlen") == 0){
+		if(bs->pathlen)  
+			ret = 1;
+		else
+			ret = 0;
+	}
 
     BASIC_CONSTRAINTS_free(bs);
 
