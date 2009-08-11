@@ -674,6 +674,7 @@ basicC(ext, value)
 
     CODE:
 	/* retrieve the value of CA or pathlen in basicConstraints */
+
     method = X509V3_EXT_get(ext);
     bs = X509V3_EXT_d2i(ext);
 	if(strcmp(value, "ca") == 0){
@@ -707,6 +708,7 @@ ia5string(ext)
 
     CODE:
 	/* retrieving the value of an ia5string object */
+
 	bio = sv_bio_create();
 	str = X509V3_EXT_d2i(ext);
 	BIO_printf(bio,"%s", str->data);
@@ -754,6 +756,28 @@ bit_string(ext)
 
 	OUTPUT:
 	RETVAL
+
+SV*
+extKeyUsage(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+		BIO *bio;
+		STACK_OF(ASN1_OBJECT) *extku;
+		int nid;
+		const char *value;
+	CODE:
+	    bio = sv_bio_create();
+		extku = (STACK_OF(ASN1_OBJECT)*) X509V3_EXT_d2i(ext);
+		while(sk_ASN1_OBJECT_num(extku) > 0){
+			nid = OBJ_obj2nid(sk_ASN1_OBJECT_pop(extku));
+			value = OBJ_nid2sn(nid);
+			BIO_printf(bio, value);
+			BIO_printf(bio, " ");
+		}
+	    RETVAL = sv_bio_final(bio);
+
+		OUTPUT:
+		RETVAL
 
 
 MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::ObjectID
