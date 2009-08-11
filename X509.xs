@@ -758,7 +758,7 @@ bit_string(ext)
 	RETVAL
 
 SV*
-extKeyUsage(ext)
+extendedKeyUsage(ext)
 		Crypt::OpenSSL::X509::Extension ext;
 	PREINIT:
 		BIO *bio;

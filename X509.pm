@@ -65,6 +65,13 @@ sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
 	return %bit_str_hash;
 }
 
+sub Crypt::OpenSSL::X509::Extension::extKeyUsage {
+	my $ext = shift;
+	my @vals = split(/ /, $ext->extendedKeyUsage());
+	return @vals;
+}
+
+
 BOOT_XS: {
 	require DynaLoader;
 
