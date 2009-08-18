@@ -779,6 +779,64 @@ extendedKeyUsage(ext)
 		OUTPUT:
 		RETVAL
 
+int
+auth_keyid(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+		AUTHORITY_KEYID *akid;
+	CODE:
+		akid = X509V3_EXT_d2i(ext);
+		if(akid->keyid)
+				RETVAL = 1;
+
+	OUTPUT:
+	RETVAL
+
+SV*
+keyid_data(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+        AUTHORITY_KEYID *akid;
+		ASN1_OCTET_STRING *skid;
+		int nid;
+		ASN1_OBJECT *object;
+		BIO *bio;
+	CODE:
+		bio = sv_bio_create();
+	    object = X509_EXTENSION_get_object(ext);
+		nid = OBJ_obj2nid(object);
+        if(nid == NID_authority_key_identifier){
+			    akid = X509V3_EXT_d2i(ext);
+				BIO_printf(bio, akid->keyid->data);
+		}
+		else if(nid == NID_subject_key_identifier){
+				skid = X509V3_EXT_d2i(ext);
+				BIO_printf(bio, skid->data);
+		}
+		RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
+
+MODULE = Crypt::OpenSSL::X509       PACKAGE = Crypt::OpenSSL::X509
+SV*
+sig_print(x509)
+		Crypt::OpenSSL::X509 x509;
+	PREINIT:
+		BIO *bio;
+		unsigned char *s;
+		int n,i;
+	CODE:
+		n = x509->signature->length;
+		s = x509->signature->data;
+        bio = sv_bio_create();
+		for(i=0; i<n; i++){
+				 BIO_printf(bio, "%02x", s[i]);
+		}
+        RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
 
 MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::ObjectID
 char*
