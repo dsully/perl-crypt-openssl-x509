@@ -2,6 +2,7 @@ Revision history for Perl extension Crypt::OpenSSL::X509.
 
 0.9    --DATE--
 	- Patches from David O'Callaghan to access X509 extensions & documenation.
+	- Patch from Otmar Lendl to allow UTF-8 chars in certificate names.
 
 0.8    Sat Nov  8 15:40:02 PST 2008
 	- Fix error message.

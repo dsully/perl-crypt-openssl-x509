@@ -73,6 +73,13 @@ static SV* sv_bio_final(BIO *bio) {
 	return sv;
 }
 
+static SV* sv_bio_utf8_on(BIO *bio) {
+	SV* sv;
+	sv = (SV *)BIO_get_callback_arg(bio);
+	SvUTF8_on(sv);
+	return sv;
+}
+
 /*
 static void sv_bio_error(BIO *bio) {
 
@@ -147,7 +154,7 @@ static HV* hv_exts(X509* x509, int no_name) {
 }
 
 
-MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509		
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509
 
 PROTOTYPES: DISABLE
 
@@ -217,7 +224,7 @@ new_from_string(class, string, format = FORMAT_PEM)
         int	format
 
 	ALIAS:
-   	new_from_file = 1     
+   	new_from_file = 1
 
 	PREINIT:
 	BIO *bio;
@@ -293,8 +300,11 @@ accessor(x509)
 			name = X509_get_issuer_name(x509);
 		}
 
+                /* this need not be pure ascii, try to get a native perl character string with * utf8 */
+		sv_bio_utf8_on(bio);
+
 		/* this is prefered over X509_NAME_oneline() */
-		X509_NAME_print_ex(bio, name, 0, XN_FLAG_SEP_CPLUS_SPC);
+		X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
 
 	} else if (ix == 3) {
 
@@ -327,7 +337,7 @@ accessor(x509)
 		i2a_ASN1_INTEGER(bio, x509->cert_info->version);
 
 	} else if (ix == 9) {
-                
+
                 i2a_ASN1_OBJECT(bio, x509->sig_alg->algorithm);
         }
 
@@ -537,7 +547,7 @@ pubkey(x509)
 	OUTPUT:
 	RETVAL
 
-int 
+int
 num_extensions(x509)
 	Crypt::OpenSSL::X509 x509;
     CODE:
@@ -556,7 +566,7 @@ extension(x509, i)
 
 	CODE:
         ext = NULL;
-        
+
         c = X509_get_ext_count(x509);
         if ( ! c > 0 ) {
             croak("No extensions found\n");
@@ -589,14 +599,14 @@ extensions(x509)
         RETVAL
 
 
-MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::Extension		
+MODULE = Crypt::OpenSSL::X509		PACKAGE = Crypt::OpenSSL::X509::Extension
 
 int
 critical(ext)
         Crypt::OpenSSL::X509::Extension ext;
-    
+
 	CODE:
-        
+
 	if (ext == NULL) {
             croak("No extension supplied\n");
 	}
@@ -610,7 +620,7 @@ Crypt::OpenSSL::X509::ObjectID
 object(ext)
         Crypt::OpenSSL::X509::Extension ext;
     CODE:
-        
+
 	if (ext == NULL) {
             croak("No extension supplied\n");
 	}
@@ -627,7 +637,7 @@ value(ext)
         BIO* bio;
     CODE:
         bio  = sv_bio_create();
-        
+
 	if (ext == NULL) {
             BIO_free_all(bio);
             croak("No extension supplied\n");
@@ -696,7 +706,7 @@ as_string(name)
     OUTPUT:
 	RETVAL
 
-AV* 
+AV*
 entries(name)
 	Crypt::OpenSSL::X509::Name name;
     PREINIT:
@@ -710,7 +720,7 @@ entries(name)
         for(i = 0; i < c; i++) {
             rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)X509_NAME_get_entry(name, i));
             av_push(RETVAL, rv);
-        }   
+        }
 
     OUTPUT:
         RETVAL
@@ -749,7 +759,7 @@ get_index_by_type(name, type, lastpos = -1)
 
     OUTPUT:
         RETVAL
-        
+
 Crypt::OpenSSL::X509::Name_Entry
 get_entry_by_type(name, type, lastpos = -1)
 	Crypt::OpenSSL::X509::Name name;
@@ -799,7 +809,10 @@ as_string(name_entry, ln = 0)
             n = OBJ_nid2sn(nid);
         }
         BIO_printf(bio, "%s=", n);
-        ASN1_STRING_print(bio, X509_NAME_ENTRY_get_data(name_entry));
+
+        sv_bio_utf8_on(bio);
+
+        ASN1_STRING_print_ex(bio, X509_NAME_ENTRY_get_data(name_entry), ASN1_STRFLGS_UTF8_CONVERT & ~ASN1_STRFLGS_ESC_MSB);
 	RETVAL = sv_bio_final(bio);
 
     OUTPUT:
@@ -858,6 +871,6 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
 
     CODE:
         RETVAL = (X509_NAME_ENTRY_get_data(name_entry)->type == (ix==1?asn1_type:ix));
-    
+
     OUTPUT:
         RETVAL
