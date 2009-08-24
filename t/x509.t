@@ -1,5 +1,5 @@
 
-use Test::More tests => 40;
+use Test::More tests => 41;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -33,6 +33,7 @@ ok($x509->has_extension_oid("2.5.29.19"), 'has_extension_oid(2.5.29.19)');
 is($$exts{"2.5.29.19"}->object()->name(),"X509v3 Basic Constraints", "Extension->object()->name()");
 
 ok($$exts{"2.5.29.19"}->is_critical(), "basic constraints is critical");
+ok($$exts{"2.5.29.19"}->basicC("ca"), 'basicConstraints CA: TRUE 2.4.1');
 
 ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
 ok(my $exts_b = $x509_b->extensions_by_name(), "extensions_by_name()");

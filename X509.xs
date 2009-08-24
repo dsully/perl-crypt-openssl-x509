@@ -537,6 +537,20 @@ pubkey(x509)
 	OUTPUT:
 	RETVAL
 
+SV*
+pub_exponent(x509)
+		Crypt::OpenSSL::X509 x509
+	PREINIT:
+		EVP_PKEY *pkey;
+		BIO *bio;
+	CODE:
+		bio = sv_bio_create();
+		pkey = X509_get_pubkey(x509);
+		BN_print(bio,pkey->pkey.rsa->e);
+		RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
 int 
 num_extensions(x509)
 	Crypt::OpenSSL::X509 x509;
@@ -780,13 +794,13 @@ extendedKeyUsage(ext)
 		RETVAL
 
 int
-auth_keyid(ext)
+auth_att(ext)
 		Crypt::OpenSSL::X509::Extension ext;
 	PREINIT:
 		AUTHORITY_KEYID *akid;
 	CODE:
 		akid = X509V3_EXT_d2i(ext);
-		if(akid->keyid)
+			 if(akid->keyid)
 				RETVAL = 1;
 
 	OUTPUT:
