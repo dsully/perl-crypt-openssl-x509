@@ -74,8 +74,7 @@ static SV* sv_bio_final(BIO *bio) {
 }
 
 static SV* sv_bio_utf8_on(BIO *bio) {
-  SV* sv;
-  sv = (SV *)BIO_get_callback_arg(bio);
+  SV* sv = (SV *)BIO_get_callback_arg(bio);
   SvUTF8_on(sv);
   return sv;
 }
@@ -219,7 +218,7 @@ new(class)
 
   if (!X509_set_version(RETVAL, 2)) {
     X509_free(RETVAL);
-    croak ("%s - can't X509_set_version()", class);
+    croak ("%s - can't X509_set_version()", SvPV_nolen(class));
   }
 
   ASN1_INTEGER_set(X509_get_serialNumber(RETVAL), 0L);
@@ -251,7 +250,7 @@ new_from_string(class, string, format = FORMAT_PEM)
     bio = BIO_new_mem_buf(cert, len);
   }
 
-  if (!bio) croak("%s: Failed to create BIO", class);
+  if (!bio) croak("%s: Failed to create BIO", SvPV_nolen(class));
 
   /* this can come in any number of ways */
   if (format == FORMAT_ASN1) {
