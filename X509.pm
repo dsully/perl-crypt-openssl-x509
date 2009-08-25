@@ -8,78 +8,88 @@ use base qw(Exporter);
 $VERSION = '0.9';
 
 @EXPORT_OK = qw(
-	FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
-	FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC
+  FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
+  FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC
 );
 
 sub Crypt::OpenSSL::X509::bit_length {
-    my $x509 = shift;
-    return length($x509->modulus()) * 4; #each character is one hex digit = 4 bits
+  my $x509 = shift;
+
+  return length($x509->modulus) * 4; # each character is one hex digit = 4 bits
 }
 
 sub Crypt::OpenSSL::X509::has_extension_oid {
-    my $x509 = shift;
-    my $oid = shift;
-    if(not $Crypt::OpenSSL::X509::exts_by_oid) {
-        $Crypt::OpenSSL::X509::exts_by_oid = $x509->extensions_by_oid();
-    }
-    return $$Crypt::OpenSSL::X509::exts_by_oid{$oid}?1:0;
+  my $x509 = shift;
+  my $oid  = shift;
+
+  if (not $Crypt::OpenSSL::X509::exts_by_oid) {
+      $Crypt::OpenSSL::X509::exts_by_oid = $x509->extensions_by_oid;
+  }
+
+  return $$Crypt::OpenSSL::X509::exts_by_oid{$oid} ? 1 : 0;
 }
 
 sub Crypt::OpenSSL::X509::Extension::is_critical {
-    my $ext = shift;
-    my $crit = $ext->critical();
-    return $crit?1:0;
+  my $ext = shift;
+  my $crit = $ext->critical();
+
+  return $crit ? 1 : 0;
 }
 
+# return a hash for the values of keyUsage or nsCertType
 sub Crypt::OpenSSL::X509::Extension::hash_bit_string {
-	# return a hash for the values of keyUsage or nsCertType
-	my $ext = shift;
-	my @bits = split(//, $ext->bit_string);
-	my $len = @bits;
-	my %bit_str_hash = ();
-	if($len == 9){    #bits for keyUsage
-        %bit_str_hash = (
-            'Digital Signature' => $bits[0],
-            'Non Repudiation' => $bits[1],
-            'Key Encipherment' => $bits[2],
-            'Data Encipherment' => $bits[3],
-            'Key Agreement' => $bits[4],
-            'Certificate Sign' => $bits[5],
-            'CRL Sign' => $bits[6],
-            'Encipher Only' => $bits[7],
-            'Decipher Only' => $bits[8],);
-	}
-	elsif($len == 8){    #bits for nsCertType
-		%bit_str_hash = (
-			'SSL Client' => $bits[0], 
-			'SSL Server' => $bits[1], 
-			'S/MIME' => $bits[2], 
-			'Object Signing' => $bits[3], 
-			'Unused' => $bits[4], 
-			'SSL CA' => $bits[5], 
-			'S/MIME CA' => $bits[6], 
-			'Object Signing CA' => $bits[7],);
-	}
+  my $ext  = shift;
 
-	return %bit_str_hash;
+  my @bits = split(//, $ext->bit_string);
+  my $len  = @bits;
+
+  my %bit_str_hash = ();
+
+  if ($len == 9) { # bits for keyUsage
+
+    %bit_str_hash = (
+      'Digital Signature' => $bits[0],
+      'Non Repudiation'   => $bits[1],
+      'Key Encipherment'  => $bits[2],
+      'Data Encipherment' => $bits[3],
+      'Key Agreement'     => $bits[4],
+      'Certificate Sign'  => $bits[5],
+      'CRL Sign'          => $bits[6],
+      'Encipher Only'     => $bits[7],
+      'Decipher Only'     => $bits[8],);
+
+  } elsif ($len == 8) {    #bits for nsCertType
+
+    %bit_str_hash = (
+      'SSL Client'        => $bits[0],
+      'SSL Server'        => $bits[1],
+      'S/MIME'            => $bits[2],
+      'Object Signing'    => $bits[3],
+      'Unused'            => $bits[4],
+      'SSL CA'            => $bits[5],
+      'S/MIME CA'         => $bits[6],
+      'Object Signing CA' => $bits[7],);
+  }
+
+  return %bit_str_hash;
 }
 
 sub Crypt::OpenSSL::X509::Extension::extKeyUsage {
-	my $ext = shift;
-	my @vals = split(/ /, $ext->extendedKeyUsage());
-	return @vals;
+  my $ext = shift;
+
+  my @vals = split(/ /, $ext->extendedKeyUsage);
+
+  return @vals;
 }
 
 
 BOOT_XS: {
-	require DynaLoader;
+  require DynaLoader;
 
-	# DynaLoader calls dl_load_flags as a static method.
-	*dl_load_flags = DynaLoader->can('dl_load_flags');
+  # DynaLoader calls dl_load_flags as a static method.
+  *dl_load_flags = DynaLoader->can('dl_load_flags');
 
-	do {__PACKAGE__->can('bootstrap') ||
-		\&DynaLoader::bootstrap}->(__PACKAGE__,$VERSION);
+  do {__PACKAGE__->can('bootstrap') || \&DynaLoader::bootstrap}->(__PACKAGE__, $VERSION);
 }
 
 1;
@@ -121,9 +131,9 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   This implement a large majority of OpenSSL's useful X509 API.
 
   The email() method supports both certificates where the
-  subject is of the form: 
-  "... CN=Firstname lastname/emailAddress=user@domain", and also 
-  certificates where there is a X509v3 Extension of the form 
+  subject is of the form:
+  "... CN=Firstname lastname/emailAddress=user@domain", and also
+  certificates where there is a X509v3 Extension of the form
   "X509v3 Subject Alternative Name: email=user@domain".
 
 =head2 EXPORT
@@ -372,6 +382,6 @@ David O'Callaghan, E<lt>david.ocallaghan@cs.tcd.ieE<gt>
 Copyright 2004-2009 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 
 =cut
