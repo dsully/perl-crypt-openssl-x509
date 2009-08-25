@@ -547,7 +547,21 @@ pubkey(x509)
 	OUTPUT:
 	RETVAL
 
-int
+SV*
+pub_exponent(x509)
+		Crypt::OpenSSL::X509 x509
+	PREINIT:
+		EVP_PKEY *pkey;
+		BIO *bio;
+	CODE:
+		bio = sv_bio_create();
+		pkey = X509_get_pubkey(x509);
+		BN_print(bio,pkey->pkey.rsa->e);
+		RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
+int 
 num_extensions(x509)
 	Crypt::OpenSSL::X509 x509;
     CODE:
@@ -636,18 +650,215 @@ value(ext)
     PREINIT:
         BIO* bio;
     CODE:
-        bio  = sv_bio_create();
-
-	if (ext == NULL) {
-            BIO_free_all(bio);
-            croak("No extension supplied\n");
+	bio  = sv_bio_create();
+        
+  	if (ext == NULL) {
+	   BIO_free_all(bio);
+       croak("No extension supplied\n");
 	}
 
-        ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
+    ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
 
 	RETVAL = sv_bio_final(bio);
 
     OUTPUT:
+	RETVAL
+
+
+SV*
+to_string(ext)
+        Crypt::OpenSSL::X509::Extension ext;
+    PREINIT:
+        BIO* bio;
+    CODE:
+    bio  = sv_bio_create();
+
+    if (ext == NULL) {
+       BIO_free_all(bio);
+       croak("No extension supplied\n");
+    }
+
+
+    X509V3_EXT_print(bio, ext, 0, 0);
+
+    RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+    RETVAL
+
+
+int
+basicC(ext, value)
+         Crypt::OpenSSL::X509::Extension ext;
+		 char *value;
+    PREINIT:
+         BASIC_CONSTRAINTS *bs;
+         const X509V3_EXT_METHOD *method;
+		 int ret;
+
+    CODE:
+	/* retrieve the value of CA or pathlen in basicConstraints */
+
+    method = X509V3_EXT_get(ext);
+    bs = X509V3_EXT_d2i(ext);
+	if(strcmp(value, "ca") == 0){
+  	    if(bs->ca > 0)
+	        ret = 1;
+	    else
+		    ret = 0;
+	}
+    else if(strcmp(value, "pathlen") == 0){
+		if(bs->pathlen)  
+			ret = 1;
+		else
+			ret = 0;
+	}
+
+    BASIC_CONSTRAINTS_free(bs);
+
+    RETVAL = ret;
+
+    OUTPUT:
+    RETVAL
+
+
+SV*
+ia5string(ext)
+         Crypt::OpenSSL::X509::Extension ext;
+
+    PREINIT:
+	     ASN1_IA5STRING *str;
+		 BIO *bio;
+
+    CODE:
+	/* retrieving the value of an ia5string object */
+
+	bio = sv_bio_create();
+	str = X509V3_EXT_d2i(ext);
+	BIO_printf(bio,"%s", str->data);
+	ASN1_IA5STRING_free(str);
+		 
+	RETVAL = sv_bio_final(bio);
+
+    OUTPUT:
+    RETVAL
+
+
+SV*
+bit_string(ext)
+		 Crypt::OpenSSL::X509::Extension ext;
+
+    PREINIT:
+		int i, nid;
+		ASN1_OBJECT *object;
+		ASN1_BIT_STRING *bit_str;
+        int string[10];
+		BIO *bio;
+
+	CODE:
+    bio = sv_bio_create();
+
+	object = X509_EXTENSION_get_object(ext);
+	nid = OBJ_obj2nid(object);
+	bit_str = X509V3_EXT_d2i(ext);
+	
+	if(nid == NID_key_usage){
+		for(i = 0; i < 9; i++){
+		    string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+			BIO_printf(bio, "%d", string[i]);
+		}
+	}
+	else if(nid == NID_netscape_cert_type){
+		for(i = 0; i < 8; i++){
+		  string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+		  BIO_printf(bio, "%d",  string[i]);
+		} 
+	}
+
+
+	RETVAL = sv_bio_final(bio);
+
+	OUTPUT:
+	RETVAL
+
+SV*
+extendedKeyUsage(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+		BIO *bio;
+		STACK_OF(ASN1_OBJECT) *extku;
+		int nid;
+		const char *value;
+	CODE:
+	    bio = sv_bio_create();
+		extku = (STACK_OF(ASN1_OBJECT)*) X509V3_EXT_d2i(ext);
+		while(sk_ASN1_OBJECT_num(extku) > 0){
+			nid = OBJ_obj2nid(sk_ASN1_OBJECT_pop(extku));
+			value = OBJ_nid2sn(nid);
+			BIO_printf(bio, value);
+			BIO_printf(bio, " ");
+		}
+	    RETVAL = sv_bio_final(bio);
+
+		OUTPUT:
+		RETVAL
+
+int
+auth_att(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+		AUTHORITY_KEYID *akid;
+	CODE:
+		akid = X509V3_EXT_d2i(ext);
+			 if(akid->keyid)
+				RETVAL = 1;
+
+	OUTPUT:
+	RETVAL
+
+SV*
+keyid_data(ext)
+		Crypt::OpenSSL::X509::Extension ext;
+	PREINIT:
+        AUTHORITY_KEYID *akid;
+		ASN1_OCTET_STRING *skid;
+		int nid;
+		ASN1_OBJECT *object;
+		BIO *bio;
+	CODE:
+		bio = sv_bio_create();
+	    object = X509_EXTENSION_get_object(ext);
+		nid = OBJ_obj2nid(object);
+        if(nid == NID_authority_key_identifier){
+			    akid = X509V3_EXT_d2i(ext);
+				BIO_printf(bio, akid->keyid->data);
+		}
+		else if(nid == NID_subject_key_identifier){
+				skid = X509V3_EXT_d2i(ext);
+				BIO_printf(bio, skid->data);
+		}
+		RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
+
+MODULE = Crypt::OpenSSL::X509       PACKAGE = Crypt::OpenSSL::X509
+SV*
+sig_print(x509)
+		Crypt::OpenSSL::X509 x509;
+	PREINIT:
+		BIO *bio;
+		unsigned char *s;
+		int n,i;
+	CODE:
+		n = x509->signature->length;
+		s = x509->signature->data;
+        bio = sv_bio_create();
+		for(i=0; i<n; i++){
+				 BIO_printf(bio, "%02x", s[i]);
+		}
+        RETVAL = sv_bio_final(bio);
+	OUTPUT:
 	RETVAL
 
 
