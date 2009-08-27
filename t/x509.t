@@ -1,5 +1,5 @@
 
-use Test::More tests => 46;
+use Test::More tests => 43;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -36,7 +36,7 @@ is($x509->bit_length, 1024, 'bit_length()');
 
 ok($x509->num_extensions() eq '1', 'num_extensions()');
 
-ok(my $exts = $x509->extensions_by_oid(), 'extension_by_oid()');
+ok($exts = $x509->extensions_by_oid(), 'extension_by_oid()');
 
 ok($x509->has_extension_oid("2.5.29.19"), 'has_extension_oid(2.5.29.19)');
 
@@ -48,7 +48,12 @@ ok($$exts{"2.5.29.19"}->basicC("ca"), 'basicConstraints CA: TRUE 2.4.1');
 ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
 ok(my $exts_b = $x509_b->extensions_by_name(), "extensions_by_name()");
 ok(not($$exts_b{'subjectKeyIdentifier'}->is_critical()), "subjectKeyIdentifier not critical");
+my $subkeyid = (join ":", map{sprintf "%X", ord($_)} split //, $$exts_b{'subjectKeyIdentifier'}->keyid_data());
+ok($subkeyid eq "E5:9D:59:30:82:47:58:CC:AC:FA:8:54:36:86:7B:3A:B5:4:4D:F0", "Extension{subjectKeyID}->keyid_data()");
+
 ok($$exts_b{'keyUsage'}->is_critical(), "keyUsage is critical");
+my %key_hash = $$exts_b{'keyUsage'}->hash_bit_string();
+ok($key_hash{'Certificate Sign'}, "Extension->hash_bit_string()");
 
 isa_ok($x509->subject_name(), "Crypt::OpenSSL::X509::Name", 'subject_name()');
 isa_ok($x509->issuer_name(), "Crypt::OpenSSL::X509::Name", 'issuer_name()');
