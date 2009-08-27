@@ -32,6 +32,9 @@ typedef ASN1_OBJECT* Crypt__OpenSSL__X509__ObjectID;
 typedef X509_NAME* Crypt__OpenSSL__X509__Name;
 typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
 
+/* Unicode 0xfffd */
+static U8 utf8_substitute_char[3] = { 0xef, 0xbf, 0xbd };
+
 /* stolen from OpenSSL.xs */
 long bio_write_cb(struct bio_st *bm, int m, const char *ptr, int l, long x, long y) {
 
@@ -73,9 +76,36 @@ static SV* sv_bio_final(BIO *bio) {
   return sv;
 }
 
+/* call this just before sv_bio_final if the BIO got an UTF8 encoded text and you want native perl utf-8 strings. */
 static SV* sv_bio_utf8_on(BIO *bio) {
+
   SV* sv = (SV *)BIO_get_callback_arg(bio);
-  SvUTF8_on(sv);
+
+  /* Illegal utf-8 in the string */
+  if (!sv_utf8_decode(sv)) {
+    STRLEN len;
+    SV *nsv = newSVpvn("", 0);
+
+    const U8* start = (U8 *) SvPV(sv, len);
+    const U8* end   = start + len;
+    const U8* cur;
+
+    while ((start < end) && !is_utf8_string_loc(start, len, &cur)) {
+      sv_catpvn(nsv, (const char*)start, (cur - start) - 1);	/* text that was ok */
+      sv_catpvn(nsv, (const char*)utf8_substitute_char, 3); 	/* insert \x{fffd} */
+      start = cur + 1;
+      len = end - cur;
+    }
+
+    if (start < end) {
+      sv_catpvn(nsv, (const char*)start, (cur - start) - 1);	/* rest of the string */
+    }
+
+    sv_copypv(sv, nsv);
+    SvREFCNT_dec(nsv);
+    sv_utf8_decode(sv); /* should be ok now */
+  }
+
   return sv;
 }
 
@@ -309,11 +339,11 @@ accessor(x509)
       name = X509_get_issuer_name(x509);
     }
 
-    /* this need not be pure ascii, try to get a native perl character string with * utf8 */
-    sv_bio_utf8_on(bio);
-
     /* this is prefered over X509_NAME_oneline() */
     X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
+
+    /* this need not be pure ascii, try to get a native perl character string with * utf8 */
+    sv_bio_utf8_on(bio);
 
   } else if (ix == 3) {
 
@@ -1081,9 +1111,10 @@ as_string(name_entry, ln = 0)
 
   BIO_printf(bio, "%s=", n);
 
+  ASN1_STRING_print_ex(bio, X509_NAME_ENTRY_get_data(name_entry), ASN1_STRFLGS_UTF8_CONVERT & ~ASN1_STRFLGS_ESC_MSB);
+
   sv_bio_utf8_on(bio);
 
-  ASN1_STRING_print_ex(bio, X509_NAME_ENTRY_get_data(name_entry), ASN1_STRFLGS_UTF8_CONVERT & ~ASN1_STRFLGS_ESC_MSB);
   RETVAL = sv_bio_final(bio);
 
   OUTPUT:
