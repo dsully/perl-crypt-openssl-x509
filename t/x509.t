@@ -1,5 +1,5 @@
 
-use Test::More tests => 43;
+use Test::More tests => 49;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -15,6 +15,8 @@ ok($x509->pub_exponent() eq '10001', 'pub_exponent()'); # Alias
 
 ok($x509->issuer() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'issuer()');
 ok($x509->subject() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'subject()');
+
+ok($x509->is_selfsigned(), 'is_selfsigned()');
 
 # For some reason the hash hash changed with v1.0.0
 # Verified with the openssl binary.

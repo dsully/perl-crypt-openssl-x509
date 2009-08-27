@@ -31,6 +31,7 @@ typedef X509_EXTENSION* Crypt__OpenSSL__X509__Extension;
 typedef ASN1_OBJECT* Crypt__OpenSSL__X509__ObjectID;
 typedef X509_NAME* Crypt__OpenSSL__X509__Name;
 typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
+typedef X509_CRL* Crypt__OpenSSL__X509__CRL;
 
 /* 1.0 backwards compat */
 #ifndef sk_OPENSSL_STRING_num
@@ -681,7 +682,38 @@ pubkey(x509)
   OUTPUT:
   RETVAL
 
-int
+SV*
+pub_exponent(x509)
+		Crypt::OpenSSL::X509 x509
+	PREINIT:
+		EVP_PKEY *pkey;
+		BIO *bio;
+	CODE:
+		bio = sv_bio_create();
+		pkey = X509_get_pubkey(x509);
+		BN_print(bio,pkey->pkey.rsa->e);
+		RETVAL = sv_bio_final(bio);
+	OUTPUT:
+	RETVAL
+
+char*
+pubkey_type(x509)
+        Crypt::OpenSSL::X509 x509;
+    PREINIT:
+        EVP_PKEY *pkey;
+    CODE:
+        RETVAL=NULL;
+        pkey = X509_get_pubkey(x509);
+        if(pkey->type == EVP_PKEY_DSA){
+            RETVAL="dsa";
+        }
+        else if(pkey->type == EVP_PKEY_RSA){
+            RETVAL="rsa";
+        }
+    OUTPUT:
+    RETVAL
+
+int 
 num_extensions(x509)
   Crypt::OpenSSL::X509 x509;
 
@@ -1230,5 +1262,96 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
   CODE:
   RETVAL = (X509_NAME_ENTRY_get_data(name_entry)->type == (ix == 1 ? asn1_type : ix));
 
-  OUTPUT:
-  RETVAL
+    OUTPUT:
+        RETVAL
+
+
+char*
+encoding(name_entry)
+        Crypt::OpenSSL::X509::Name_Entry name_entry;
+
+		CODE:
+        RETVAL=NULL;
+			if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_PRINTABLESTRING){
+				RETVAL = "printableString";
+			}
+			else if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_IA5STRING){
+				RETVAL = "ia5String";
+			}
+			else if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_UTF8STRING){
+				RETVAL = "utf8String";
+			}
+
+		OUTPUT:
+		RETVAL
+		
+MODULE = Crypt::OpenSSL::X509       PACKAGE = Crypt::OpenSSL::X509_CRL
+
+Crypt::OpenSSL::X509::CRL
+new_from_crl_string(class, string, format = FORMAT_PEM)
+    SV  *class;
+    SV  *string;
+    int format;
+
+    ALIAS:
+    new_from_crl_file = 1
+
+    PREINIT:
+    BIO *bio;
+    STRLEN len;
+    char *crl;
+
+    CODE:
+
+    crl = SvPV(string, len);
+
+    if (ix == 1) {
+	   bio = BIO_new_file(crl, "r");
+    } else {
+       bio = BIO_new_mem_buf(crl, len);
+    }
+
+    if (!bio) croak("%s: Failed to create BIO", class);
+
+    if (format == FORMAT_ASN1) {
+            RETVAL = (X509_CRL*)d2i_X509_CRL_bio(bio, NULL);
+    } else {
+            RETVAL = (X509_CRL*)PEM_read_bio_X509_CRL(bio, NULL, NULL, NULL);
+    }
+
+    if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
+
+    BIO_free(bio);
+
+    OUTPUT:
+    RETVAL
+
+SV*
+CRL_accessor(crl)
+    Crypt::OpenSSL::X509::CRL crl;
+
+	ALIAS:
+		CRL_issuer = 1
+		CRL_sig_alg_name = 2
+	
+	PREINIT:
+		BIO *bio;
+		X509_NAME *name;
+
+	CODE:
+		bio = sv_bio_create();
+
+		if(ix == 1){
+			  name = X509_CRL_get_issuer(crl);
+			  sv_bio_utf8_on(bio);
+			  X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
+			  RETVAL = sv_bio_final(bio);
+		}
+		else if(ix == 2){
+			i2a_ASN1_OBJECT(bio, crl->sig_alg->algorithm);
+		}
+		
+		RETVAL = sv_bio_final(bio);
+
+		OUTPUT:
+		RETVAL
