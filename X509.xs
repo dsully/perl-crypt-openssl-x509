@@ -561,6 +561,22 @@ pub_exponent(x509)
 	OUTPUT:
 	RETVAL
 
+char*
+pubkey_type(x509)
+        Crypt::OpenSSL::X509 x509;
+    PREINIT:
+        EVP_PKEY *pkey;
+    CODE:
+        pkey = X509_get_pubkey(x509);
+        if(pkey->type == EVP_PKEY_DSA){
+            RETVAL="dsa";
+        }
+        else if(pkey->type == EVP_PKEY_RSA){
+            RETVAL="rsa";
+        }
+    OUTPUT:
+    RETVAL
+
 int 
 num_extensions(x509)
 	Crypt::OpenSSL::X509 x509;
