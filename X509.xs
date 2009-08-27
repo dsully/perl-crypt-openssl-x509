@@ -66,7 +66,7 @@ static SV* sv_bio_final(BIO *bio) {
 
   SV* sv;
 
-  BIO_flush(bio);
+  (void)BIO_flush(bio);
   sv = (SV *)BIO_get_callback_arg(bio);
   BIO_free_all(bio);
 
@@ -153,7 +153,7 @@ static HV* hv_exts(X509* x509, int no_name) {
 
     } else if (no_name == 2) {
 
-       key = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+       key = (char*)OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
        r = strlen(key);
     }
 
@@ -430,7 +430,7 @@ as_string(x509, format = FORMAT_PEM)
     ah.data   = (char *)x509;
     ah.meth   = X509_asn1_meth();
 
-    ASN1_i2d_bio(i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+    ASN1_i2d_bio((i2d_of_void*)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -839,7 +839,7 @@ extendedKeyUsage(ext)
   while(sk_ASN1_OBJECT_num(extku) > 0) {
     nid = OBJ_obj2nid(sk_ASN1_OBJECT_pop(extku));
     value = OBJ_nid2sn(nid);
-    BIO_printf(bio, value);
+    BIO_printf(bio, "%s", value);
     BIO_printf(bio, " ");
   }
 
@@ -883,12 +883,12 @@ keyid_data(ext)
   if (nid == NID_authority_key_identifier) {
 
     akid = X509V3_EXT_d2i(ext);
-    BIO_printf(bio, akid->keyid->data);
+    BIO_printf(bio, "%s", akid->keyid->data);
 
   } else if (nid == NID_subject_key_identifier) {
 
     skid = X509V3_EXT_d2i(ext);
-    BIO_printf(bio, skid->data);
+    BIO_printf(bio, "%s", skid->data);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -987,7 +987,6 @@ get_index_by_type(name, type, lastpos = -1)
   Crypt::OpenSSL::X509::Name name;
   const char* type;
   int lastpos;
-  int ln;
 
   ALIAS:
   get_index_by_long_type = 1
@@ -1029,7 +1028,6 @@ get_entry_by_type(name, type, lastpos = -1)
   Crypt::OpenSSL::X509::Name name;
   const char* type;
   int lastpos;
-  int ln;
 
   ALIAS:
   get_entry_by_long_type = 1
@@ -1068,7 +1066,7 @@ as_string(name_entry, ln = 0)
 
   PREINIT:
   BIO *bio;
-  char *n;
+  const char *n;
   int nid;
 
   CODE:
@@ -1101,7 +1099,7 @@ type(name_entry, ln = 0)
 
   PREINIT:
   BIO *bio;
-  char *n;
+  const char *n;
   int nid;
 
   CODE:
