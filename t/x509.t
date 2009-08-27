@@ -1,5 +1,5 @@
 
-use Test::More tests => 41;
+use Test::More tests => 43;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -44,6 +44,11 @@ isa_ok($x509->subject_name(), "Crypt::OpenSSL::X509::Name", 'subject_name()');
 isa_ok($x509->issuer_name(), "Crypt::OpenSSL::X509::Name", 'issuer_name()');
 is($x509->subject_name()->as_string(), 'C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA, emailAddress=server-certs@thawte.com', 'subject_name()->as_string()');
 is($x509->issuer_name()->as_string(), 'C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA, emailAddress=server-certs@thawte.com', 'issuer_name()->as_string()');
+
+ok(my $exts = $x509->extensions_by_oid(), 'extension_by_oid()');
+is($$exts{"2.5.29.15"}->object()->name(), "X509v3 Key Usage", "Extension->object()->name()");
+my %key_hash = $$exts{"2.5.29.15"}->hash_bit_string();
+ok($key_hash{'Certificate Sign'}, "Extension->hash_bit_string()");
 
 ok(my $subject_name_entries = $x509->subject_name()->entries(), 'subject_name()->entries()');
 is(@$subject_name_entries[0]->as_string(),"C=ZA",'Name_Entry->as_string()');
