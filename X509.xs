@@ -1104,6 +1104,24 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
         RETVAL
 
 
+char*
+encoding(name_entry)
+        Crypt::OpenSSL::X509::Name_Entry name_entry;
+
+		CODE:
+			if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_PRINTABLESTRING){
+				RETVAL = "printableString";
+			}
+			else if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_IA5STRING){
+				RETVAL = "ia5String";
+			}
+			else if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_UTF8STRING){
+				RETVAL = "utf8String";
+			}
+
+		OUTPUT:
+		RETVAL
+		
 MODULE = Crypt::OpenSSL::X509       PACKAGE = Crypt::OpenSSL::X509_CRL
 
 Crypt::OpenSSL::X509::CRL
