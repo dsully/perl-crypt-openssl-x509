@@ -511,6 +511,39 @@ modulus(x509)
   RETVAL
 
 SV*
+exponent(x509)
+  Crypt::OpenSSL::X509 x509;
+
+  PREINIT:
+  EVP_PKEY *pkey;
+  BIO *bio;
+
+  CODE:
+  pkey = X509_get_pubkey(x509);
+  bio  = sv_bio_create();
+
+  if (pkey == NULL) {
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    croak("Exponent is unavailable\n");
+  }
+
+  if (pkey->type == EVP_PKEY_RSA) {
+    BN_print(bio, pkey->pkey.rsa->e);
+  } else {
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    croak("Wrong Algorithm type -- exponent only available with RSA\n");
+  }
+
+  RETVAL = sv_bio_final(bio);
+
+  EVP_PKEY_free(pkey);
+
+  OUTPUT:
+  RETVAL
+
+SV*
 fingerprint_md5(x509)
   Crypt::OpenSSL::X509 x509;
 
