@@ -113,6 +113,23 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   print $x509->hash() . "\n";
   print $x509->notBefore() . "\n";
   print $x509->notAfter() . "\n";
+  print $x509->modulus() . "\n";
+  print $x509->exponent() . "\n";
+  print $x509->fingerprint_sha1() . "\n";
+  print $x509->fingerprint_md5() . "\n";
+  print $x509->fingerprint_md2() . "\n";
+  print $x509->as_string(Crypt::OpenSSL::X509::FORMAT_TEXT) . "\n";
+
+  my $x509 = Crypt::OpenSSL::X509->new_from_string(
+    $der_encoded_data, Crypt::OpenSSL::X509::FORMAT_ASN1
+  );
+
+  # given a time offset of $seconds, will the certificate be valid?
+  if ($x509->checkend($seconds)) {
+    # cert is ok at $seconds offset
+  } else {
+    # cert is expired at $seconds offset
+  }
 
   my $exts = $x509->extensions_by_oid();
 
