@@ -1,5 +1,5 @@
 
-use Test::More tests => 42;
+use Test::More tests => 43;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -10,6 +10,7 @@ ok($x509->serial() eq '325033CF50D156F35C81AD655C4FC825', 'serial()');
 ok($x509->fingerprint_md5() eq '51:86:E8:1F:BC:B1:C3:71:B5:18:10:DB:5F:DC:F6:20', 'fingerprint_md5()');
 
 ok($x509->exponent() eq '10001', 'exponent()');
+ok($x509->pub_exponent() eq '10001', 'pub_exponent()'); # Alias
 
 ok($x509->issuer() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'issuer()');
 ok($x509->subject() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'subject()');

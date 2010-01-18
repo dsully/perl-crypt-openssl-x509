@@ -518,9 +518,15 @@ exponent(x509)
   EVP_PKEY *pkey;
   BIO *bio;
 
+  ALIAS:
+  pub_exponent = 1
+
   CODE:
   pkey = X509_get_pubkey(x509);
   bio  = sv_bio_create();
+
+  /* Silence warning */
+  if (ix)
 
   if (pkey == NULL) {
     BIO_free_all(bio);
@@ -637,25 +643,6 @@ pubkey(x509)
   }
 
   EVP_PKEY_free(pkey);
-
-  RETVAL = sv_bio_final(bio);
-
-  OUTPUT:
-  RETVAL
-
-SV*
-pub_exponent(x509)
-  Crypt::OpenSSL::X509 x509
-
-  PREINIT:
-  EVP_PKEY *pkey;
-  BIO *bio;
-
-  CODE:
-
-  bio = sv_bio_create();
-  pkey = X509_get_pubkey(x509);
-  BN_print(bio,pkey->pkey.rsa->e);
 
   RETVAL = sv_bio_final(bio);
 

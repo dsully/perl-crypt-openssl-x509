@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.0    Mon Jan 18 12:49:11 PST 2010
+	- Remove pub_exponent() and alias it to exponent().
+
 0.9    Mon Jan 18 11:02:26 PST 2010
 	- Patches from David O'Callaghan to access X509 extensions & documenation.
 	- Patch from Otmar Lendl to allow UTF-8 chars in certificate names.
