@@ -1,6 +1,8 @@
 certs/thawte.pem
 certs/vsign1.pem
 certs/balt.pem
+certs/broken-utf8.pem
+certs/turk.pem
 Changes
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
@@ -17,9 +19,11 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 Makefile.PL
 MANIFEST
+MANIFEST.SKIP
 META.yml			Module meta-data (added by MakeMaker)
 README
 t/pod.t
+t/utf8.t
 t/x509.t
 TODO
 typemap

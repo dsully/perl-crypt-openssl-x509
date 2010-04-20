@@ -1,4 +1,4 @@
-Crypt/OpenSSL/X509 version 0.7
+Crypt/OpenSSL/X509 version 0.9
 ===============================
 
 The README is used to introduce the module and provide instructions on
@@ -31,8 +31,8 @@ COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
 
-Copyright (C) 2004-2008 Dan Sully
+Copyright (C) 2004-2010 Dan Sully
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 
