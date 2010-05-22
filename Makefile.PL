@@ -50,7 +50,7 @@ if (-d "/usr/include/openssl") {
 }
 
 cc_lib_links('crypto');
-cc_optimize_flags('-g -Wall');
+cc_optimize_flags('-g -Wall -Werror');
 
 auto_install();
 WriteAll();

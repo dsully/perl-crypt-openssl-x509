@@ -71,6 +71,8 @@ static SV* sv_bio_final(BIO *bio) {
 
   (void)BIO_flush(bio);
   sv = (SV *)BIO_get_callback_arg(bio);
+  BIO_set_callback_arg(bio, (void *)NULL);
+  BIO_set_callback(bio, (void *)NULL);
   BIO_free_all(bio);
 
   return sv;
@@ -199,17 +201,6 @@ PROTOTYPES: DISABLE
 
 BOOT:
 {
-  OpenSSL_add_all_algorithms();
-  OpenSSL_add_all_ciphers();
-  OpenSSL_add_all_digests();
-  ERR_load_PEM_strings();
-  ERR_load_ASN1_strings();
-  ERR_load_crypto_strings();
-  ERR_load_X509_strings();
-  ERR_load_DSA_strings();
-  ERR_load_RSA_strings();
-  ERR_load_OBJ_strings();
-
   HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
   struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
