@@ -250,7 +250,7 @@ new(class)
 Crypt::OpenSSL::X509
 new_from_string(class, string, format = FORMAT_PEM)
   SV  *class
-  SV  *string
+  char *string
   int  format
 
   ALIAS:
@@ -258,17 +258,13 @@ new_from_string(class, string, format = FORMAT_PEM)
 
   PREINIT:
   BIO *bio;
-  STRLEN len;
-  char *cert;
 
   CODE:
 
-  cert = SvPV(string, len);
-
   if (ix == 1) {
-    bio = BIO_new_file(cert, "r");
+    bio = BIO_new_file(string, "r");
   } else {
-    bio = BIO_new_mem_buf(cert, len);
+    bio = BIO_new_mem_buf(string, strlen(string));
   }
 
   if (!bio) croak("%s: Failed to create BIO", SvPV_nolen(class));
@@ -283,9 +279,9 @@ new_from_string(class, string, format = FORMAT_PEM)
     RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
   }
 
-  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
+  BIO_free_all(bio);
 
-  BIO_free(bio);
+  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
 
   OUTPUT:
   RETVAL
