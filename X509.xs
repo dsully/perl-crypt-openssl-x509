@@ -75,6 +75,8 @@ static SV* sv_bio_final(BIO *bio) {
   BIO_set_callback(bio, (void *)NULL);
   BIO_free_all(bio);
 
+  if (!sv) sv = &PL_sv_undef;
+
   return sv;
 }
 
@@ -293,6 +295,16 @@ DESTROY(x509)
   PPCODE:
 
   if (x509) X509_free(x509); x509 = 0;
+
+# This is called via an END block in the Perl module to clean up initialization that happened in BOOT.
+void
+__X509_cleanup(void)
+  PPCODE:
+
+  CRYPTO_cleanup_all_ex_data();
+  ERR_free_strings();
+  ERR_remove_state(0);
+  EVP_cleanup();
 
 SV*
 accessor(x509)

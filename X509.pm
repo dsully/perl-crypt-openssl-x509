@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.1';
+$VERSION = '1.2';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -90,6 +90,10 @@ BOOT_XS: {
   *dl_load_flags = DynaLoader->can('dl_load_flags');
 
   do {__PACKAGE__->can('bootstrap') || \&DynaLoader::bootstrap}->(__PACKAGE__, $VERSION);
+}
+
+END {
+  __PACKAGE__->__X509_cleanup;
 }
 
 1;

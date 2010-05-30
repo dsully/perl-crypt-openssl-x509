@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.2    Sat May 22 00:21:53 PDT 2010
+	- Fix leaked memory on module END.
+
 1.1    Fri May 21 17:10:28 PDT 2010
 	- Fix memory leak in sv_bio_final() (CPAN RT #57719)
 
