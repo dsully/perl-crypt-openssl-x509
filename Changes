@@ -1,6 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
-1.2    Sat May 22 00:21:53 PDT 2010
+1.2    Mon May 31 05:59:03 PDT 2010
+	- Compatible with OpenSSL v1.0.0
+	- Incompatible change: Removed fingerprint_md2 method.
 	- Fix leaked memory on module END.
 
 1.1    Fri May 21 17:10:28 PDT 2010

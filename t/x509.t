@@ -15,7 +15,13 @@ ok($x509->pub_exponent() eq '10001', 'pub_exponent()'); # Alias
 ok($x509->issuer() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'issuer()');
 ok($x509->subject() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certification Authority', 'subject()');
 
-ok($x509->hash() eq '2edf7016', 'hash()');
+# For some reason the hash hash changed with v1.0.0
+# Verified with the openssl binary.
+if (Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x1000000f) {
+  ok($x509->hash() eq '24ad0b63', 'hash()');
+} else {
+  ok($x509->hash() eq '2edf7016', 'hash()');
+}
 
 ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/thawte.pem'), 'new_from_file()');
 

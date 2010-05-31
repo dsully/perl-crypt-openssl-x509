@@ -32,6 +32,15 @@ typedef ASN1_OBJECT* Crypt__OpenSSL__X509__ObjectID;
 typedef X509_NAME* Crypt__OpenSSL__X509__Name;
 typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
 
+/* 1.0 backwards compat */
+#ifndef sk_OPENSSL_STRING_num
+#define sk_OPENSSL_STRING_num sk_num
+#endif
+
+#ifndef sk_OPENSSL_STRING_value
+#define sk_OPENSSL_STRING_value sk_value
+#endif
+
 /* Unicode 0xfffd */
 static U8 utf8_substitute_char[3] = { 0xef, 0xbf, 0xbd };
 
@@ -197,6 +206,35 @@ static HV* hv_exts(X509* x509, int no_name) {
   return RETVAL;
 }
 
+void _decode_netscape(BIO *bio, X509 *x509) {
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+
+    NETSCAPE_X509 nx;
+    ASN1_OCTET_STRING os;
+
+    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
+    os.length = strlen(NETSCAPE_CERT_HDR);
+    nx.header = &os;
+    nx.cert   = x509;
+
+    ASN1_item_i2d_bio(ASN1_ITEM_rptr(NETSCAPE_X509), bio, &nx);
+
+#else
+
+    ASN1_HEADER ah;
+    ASN1_OCTET_STRING os;
+
+    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
+    os.length = strlen(NETSCAPE_CERT_HDR);
+    ah.header = &os;
+    ah.data   = x509;
+    ah.meth   = X509_asn1_meth();
+
+    ASN1_i2d_bio((i2d_of_void*)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+
+#endif
+}
+
 MODULE = Crypt::OpenSSL::X509    PACKAGE = Crypt::OpenSSL::X509
 
 PROTOTYPES: DISABLE
@@ -207,6 +245,7 @@ BOOT:
 
   struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
 
+  {"OPENSSL_VERSION_NUMBER", OPENSSL_VERSION_NUMBER},
   {"FORMAT_UNDEF", FORMAT_UNDEF},
   {"FORMAT_ASN1", FORMAT_ASN1},
   {"FORMAT_TEXT", FORMAT_TEXT},
@@ -281,9 +320,9 @@ new_from_string(class, string, format = FORMAT_PEM)
     RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
   }
 
-  BIO_free_all(bio);
-
   if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
+
+  BIO_free_all(bio);
 
   OUTPUT:
   RETVAL
@@ -363,10 +402,10 @@ accessor(x509)
   } else if (ix == 7) {
 
     int j;
-    STACK *emlst = X509_get1_email(x509);
+    STACK_OF(OPENSSL_STRING) *emlst = X509_get1_email(x509);
 
-    for (j = 0; j < sk_num(emlst); j++) {
-      BIO_printf(bio, "%s", sk_value(emlst, j));
+    for (j = 0; j < sk_OPENSSL_STRING_num(emlst); j++) {
+      BIO_printf(bio, "%s", sk_OPENSSL_STRING_value(emlst, j));
     }
 
     X509_email_free(emlst);
@@ -450,16 +489,7 @@ as_string(x509, format = FORMAT_PEM)
 
   } else if (format == FORMAT_NETSCAPE) {
 
-    ASN1_HEADER ah;
-    ASN1_OCTET_STRING os;
-
-    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
-    os.length = strlen(NETSCAPE_CERT_HDR);
-    ah.header = &os;
-    ah.data   = (char *)x509;
-    ah.meth   = X509_asn1_meth();
-
-    ASN1_i2d_bio((i2d_of_void*)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+    _decode_netscape(bio, x509);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -553,12 +583,11 @@ fingerprint_md5(x509)
   Crypt::OpenSSL::X509 x509;
 
   ALIAS:
-  fingerprint_md2  = 1
   fingerprint_sha1 = 2
 
   PREINIT:
 
-  const EVP_MD *mds[] = { EVP_md5(), EVP_md2(), EVP_sha1() };
+  const EVP_MD *mds[] = { EVP_md5(), EVP_sha1() };
   unsigned char md[EVP_MAX_MD_SIZE];
   int i;
   unsigned int n;

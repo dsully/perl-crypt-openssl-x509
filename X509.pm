@@ -9,7 +9,7 @@ $VERSION = '1.2';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
-  FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC
+  FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
 
 sub Crypt::OpenSSL::X509::bit_length {
@@ -121,7 +121,6 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   print $x509->exponent() . "\n";
   print $x509->fingerprint_sha1() . "\n";
   print $x509->fingerprint_md5() . "\n";
-  print $x509->fingerprint_md2() . "\n";
   print $x509->as_string(Crypt::OpenSSL::X509::FORMAT_TEXT) . "\n";
 
   my $x509 = Crypt::OpenSSL::X509->new_from_string(
@@ -250,8 +249,6 @@ Return the modulus for an RSA public key as a string of hex digits. For DSA, ret
 Return the length of the modulus as a number of bits.
 
 =item fingerprint_md5 ( )
-
-=item fingerprint_md2 ( )
 
 =item fingerprint_sha1 ( )
 
