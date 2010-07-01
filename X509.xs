@@ -583,7 +583,7 @@ fingerprint_md5(x509)
   Crypt::OpenSSL::X509 x509;
 
   ALIAS:
-  fingerprint_sha1 = 2
+  fingerprint_sha1 = 1
 
   PREINIT:
 
