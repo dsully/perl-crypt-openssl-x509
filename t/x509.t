@@ -1,5 +1,5 @@
 
-use Test::More tests => 43;
+use Test::More tests => 44;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -8,6 +8,7 @@ ok(my $x509 = Crypt::OpenSSL::X509->new_from_file('certs/vsign1.pem'), 'new_from
 ok($x509->serial() eq '325033CF50D156F35C81AD655C4FC825', 'serial()');
 
 ok($x509->fingerprint_md5() eq '51:86:E8:1F:BC:B1:C3:71:B5:18:10:DB:5F:DC:F6:20', 'fingerprint_md5()');
+ok($x509->fingerprint_sha1() eq '78:E9:DD:06:50:62:4D:B9:CB:36:B5:07:67:F2:09:B8:43:BE:15:B3', 'fingerprint_sha1()');
 
 ok($x509->exponent() eq '10001', 'exponent()');
 ok($x509->pub_exponent() eq '10001', 'pub_exponent()'); # Alias
