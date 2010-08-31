@@ -1,5 +1,5 @@
 
-use Test::More tests => 44;
+use Test::More tests => 46;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -72,3 +72,13 @@ is($x509->subject_name()->get_index_by_long_type("localityName"),2,'Name->get_in
 isa_ok($x509->subject_name()->get_entry_by_type("ST"),"Crypt::OpenSSL::X509::Name_Entry",'Name->get_entry_by_type');
 ok($x509->subject_name()->get_entry_by_type("ST")->is_printableString(),'Name_Entry->is_printableString');
 ok(not($x509->subject_name()->get_entry_by_type("ST")->is_asn1_type(Crypt::OpenSSL::X509::V_ASN1_UTF8STRING)),'Name_Entry->is_asn1_type');
+
+# Check new_from_string / as_string round trip.
+{
+  my $x509 = Crypt::OpenSSL::X509->new_from_string(
+    Crypt::OpenSSL::X509->new_from_file('certs/balt.pem')->as_string(1),
+  1);
+
+  ok($x509);
+  ok($x509->serial() eq '020000B9', 'serial()');
+}
