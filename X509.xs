@@ -324,9 +324,9 @@ new_from_string(class, string, format = FORMAT_PEM)
     RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
   }
 
-  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
-
   BIO_free_all(bio);
+
+  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
 
   OUTPUT:
   RETVAL
