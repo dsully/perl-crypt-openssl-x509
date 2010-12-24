@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.5    Fri Dec 24 14:39:20 PST 2010
+	- Fix call to utf_loclen to be compatible with CentOS Perl. (CPAN RT #62339)
+	- Update Module::Install
+
 1.4    Tue Aug 31 07:13:20 PDT 2010
 	- Fix new_from_string().
 
@@ -64,8 +68,6 @@ Revision history for Perl extension Crypt::OpenSSL::X509.
 
 	- Interoperates with Crypt::OpenSSL::Bignum & Crypt::OpenSSL::RSA
 
-
 0.01  Wed Jan 28 15:53:18 2004
 	- original version; created by h2xs 1.22 with options
 		-O -b 5.5.3 -a -k --skip-ppport --skip-warnings -c -n Crypt::OpenSSL::X509
-
