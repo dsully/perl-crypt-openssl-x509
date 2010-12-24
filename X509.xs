@@ -103,9 +103,9 @@ static SV* sv_bio_utf8_on(BIO *bio) {
     const U8* end   = start + len;
     const U8* cur;
 
-    while ((start < end) && !is_utf8_string_loc(start, len, &cur)) {
+    while ((start < end) && !is_utf8_string_loclen(start, len, &cur, 0)) {
       sv_catpvn(nsv, (const char*)start, (cur - start) - 1);	/* text that was ok */
-      sv_catpvn(nsv, (const char*)utf8_substitute_char, 3); 	/* insert \x{fffd} */
+      sv_catpvn(nsv, (const char*)utf8_substitute_char, 3);	/* insert \x{fffd} */
       start = cur + 1;
       len = end - cur;
     }
