@@ -169,7 +169,7 @@ static HV* hv_exts(X509* x509, int no_name) {
   X509_EXTENSION *ext;
   int i, c, r;
   size_t len = 128;
-  char* key;
+  char* key = NULL;
   SV* rv;
 
   HV* RETVAL = newHV();
@@ -822,7 +822,7 @@ basicC(ext, value)
   PREINIT:
   BASIC_CONSTRAINTS *bs;
   const X509V3_EXT_METHOD *method;
-  int ret;
+  int ret = 0;
 
   CODE:
 
