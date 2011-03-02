@@ -33,6 +33,15 @@ typedef X509_NAME* Crypt__OpenSSL__X509__Name;
 typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
 typedef X509_CRL* Crypt__OpenSSL__X509__CRL;
 
+/* 1.0 backwards compat */
+#ifndef sk_OPENSSL_STRING_num
+#define sk_OPENSSL_STRING_num sk_num
+#endif
+
+#ifndef sk_OPENSSL_STRING_value
+#define sk_OPENSSL_STRING_value sk_value
+#endif
+
 /* Unicode 0xfffd */
 static U8 utf8_substitute_char[3] = { 0xef, 0xbf, 0xbd };
 
@@ -72,7 +81,11 @@ static SV* sv_bio_final(BIO *bio) {
 
   (void)BIO_flush(bio);
   sv = (SV *)BIO_get_callback_arg(bio);
+  BIO_set_callback_arg(bio, (void *)NULL);
+  BIO_set_callback(bio, (void *)NULL);
   BIO_free_all(bio);
+
+  if (!sv) sv = &PL_sv_undef;
 
   return sv;
 }
@@ -91,9 +104,9 @@ static SV* sv_bio_utf8_on(BIO *bio) {
     const U8* end   = start + len;
     const U8* cur;
 
-    while ((start < end) && !is_utf8_string_loc(start, len, &cur)) {
+    while ((start < end) && !is_utf8_string_loclen(start, len, &cur, 0)) {
       sv_catpvn(nsv, (const char*)start, (cur - start) - 1);	/* text that was ok */
-      sv_catpvn(nsv, (const char*)utf8_substitute_char, 3); 	/* insert \x{fffd} */
+      sv_catpvn(nsv, (const char*)utf8_substitute_char, 3);	/* insert \x{fffd} */
       start = cur + 1;
       len = end - cur;
     }
@@ -157,7 +170,7 @@ static HV* hv_exts(X509* x509, int no_name) {
   X509_EXTENSION *ext;
   int i, c, r;
   size_t len = 128;
-  char* key;
+  char* key = NULL;
   SV* rv;
 
   HV* RETVAL = newHV();
@@ -194,27 +207,46 @@ static HV* hv_exts(X509* x509, int no_name) {
   return RETVAL;
 }
 
+void _decode_netscape(BIO *bio, X509 *x509) {
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+
+    NETSCAPE_X509 nx;
+    ASN1_OCTET_STRING os;
+
+    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
+    os.length = strlen(NETSCAPE_CERT_HDR);
+    nx.header = &os;
+    nx.cert   = x509;
+
+    ASN1_item_i2d_bio(ASN1_ITEM_rptr(NETSCAPE_X509), bio, &nx);
+
+#else
+
+    ASN1_HEADER ah;
+    ASN1_OCTET_STRING os;
+
+    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
+    os.length = strlen(NETSCAPE_CERT_HDR);
+    ah.header = &os;
+    ah.data   = x509;
+    ah.meth   = X509_asn1_meth();
+
+    ASN1_i2d_bio((i2d_of_void*)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+
+#endif
+}
+
 MODULE = Crypt::OpenSSL::X509    PACKAGE = Crypt::OpenSSL::X509
 
 PROTOTYPES: DISABLE
 
 BOOT:
 {
-  OpenSSL_add_all_algorithms();
-  OpenSSL_add_all_ciphers();
-  OpenSSL_add_all_digests();
-  ERR_load_PEM_strings();
-  ERR_load_ASN1_strings();
-  ERR_load_crypto_strings();
-  ERR_load_X509_strings();
-  ERR_load_DSA_strings();
-  ERR_load_RSA_strings();
-  ERR_load_OBJ_strings();
-
   HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
   struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
 
+  {"OPENSSL_VERSION_NUMBER", OPENSSL_VERSION_NUMBER},
   {"FORMAT_UNDEF", FORMAT_UNDEF},
   {"FORMAT_ASN1", FORMAT_ASN1},
   {"FORMAT_TEXT", FORMAT_TEXT},
@@ -293,9 +325,9 @@ new_from_string(class, string, format = FORMAT_PEM)
     RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
   }
 
-  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
+  BIO_free_all(bio);
 
-  BIO_free(bio);
+  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
 
   OUTPUT:
   RETVAL
@@ -307,6 +339,16 @@ DESTROY(x509)
   PPCODE:
 
   if (x509) X509_free(x509); x509 = 0;
+
+# This is called via an END block in the Perl module to clean up initialization that happened in BOOT.
+void
+__X509_cleanup(void)
+  PPCODE:
+
+  CRYPTO_cleanup_all_ex_data();
+  ERR_free_strings();
+  ERR_remove_state(0);
+  EVP_cleanup();
 
 SV*
 accessor(x509)
@@ -365,10 +407,10 @@ accessor(x509)
   } else if (ix == 7) {
 
     int j;
-    STACK *emlst = X509_get1_email(x509);
+    STACK_OF(OPENSSL_STRING) *emlst = X509_get1_email(x509);
 
-    for (j = 0; j < sk_num(emlst); j++) {
-      BIO_printf(bio, "%s", sk_value(emlst, j));
+    for (j = 0; j < sk_OPENSSL_STRING_num(emlst); j++) {
+      BIO_printf(bio, "%s", sk_OPENSSL_STRING_value(emlst, j));
     }
 
     X509_email_free(emlst);
@@ -452,16 +494,7 @@ as_string(x509, format = FORMAT_PEM)
 
   } else if (format == FORMAT_NETSCAPE) {
 
-    ASN1_HEADER ah;
-    ASN1_OCTET_STRING os;
-
-    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
-    os.length = strlen(NETSCAPE_CERT_HDR);
-    ah.header = &os;
-    ah.data   = (char *)x509;
-    ah.meth   = X509_asn1_meth();
-
-    ASN1_i2d_bio((i2d_of_void*)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+    _decode_netscape(bio, x509);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -555,12 +588,11 @@ fingerprint_md5(x509)
   Crypt::OpenSSL::X509 x509;
 
   ALIAS:
-  fingerprint_md2  = 1
-  fingerprint_sha1 = 2
+  fingerprint_sha1 = 1
 
   PREINIT:
 
-  const EVP_MD *mds[] = { EVP_md5(), EVP_md2(), EVP_sha1() };
+  const EVP_MD *mds[] = { EVP_md5(), EVP_sha1() };
   unsigned char md[EVP_MAX_MD_SIZE];
   int i;
   unsigned int n;
@@ -821,7 +853,7 @@ basicC(ext, value)
   PREINIT:
   BASIC_CONSTRAINTS *bs;
   const X509V3_EXT_METHOD *method;
-  int ret;
+  int ret = 0;
 
   CODE:
 

@@ -5,7 +5,7 @@ use Encode;
 binmode(STDOUT, ":utf8");
 binmode(STDERR, ":utf8");
 
-use Devel::Peek;
+# use Devel::Peek;
 
 my $debug = 0;
 
@@ -39,11 +39,16 @@ is($sub, $sub_ok, "utf8 subject as expected");
 
 ######  and a broken UTF8 cert #####
 
-ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/broken-utf8.pem'), 'new_from_file()');
-$sub = $x509->subject();
-Dump($sub) if ($debug);
+# OpenSSL v1.0.0 (and higher?) fails to read this cert.
+SKIP: {
+  skip "OpenSSL v1.0.0 can't read broken certs.", 3 if Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x1000000f;
 
-ok(utf8::is_utf8($sub), "subject is utf8");
-is($sub, "C=PL, ST=mazowieckie, L=Warszawa, O=D.A.S. Towarzystwo Ubezpieczen Ochrony Prawnej S.A., OU=Dzi\x{fffd} Informatyki, CN=das.pl", "utf8 subject as expected");
+  ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/broken-utf8.pem'), 'new_from_file()');
+  $sub = $x509->subject();
+  Dump($sub) if ($debug);
+
+  ok(utf8::is_utf8($sub), "subject is utf8");
+  is($sub, "C=PL, ST=mazowieckie, L=Warszawa, O=D.A.S. Towarzystwo Ubezpieczen Ochrony Prawnej S.A., OU=Dzi\x{fffd} Informatyki, CN=das.pl", "utf8 subject as expected");
+};
 
 0;

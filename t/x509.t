@@ -8,6 +8,7 @@ ok(my $x509 = Crypt::OpenSSL::X509->new_from_file('certs/vsign1.pem'), 'new_from
 ok($x509->serial() eq '325033CF50D156F35C81AD655C4FC825', 'serial()');
 
 ok($x509->fingerprint_md5() eq '51:86:E8:1F:BC:B1:C3:71:B5:18:10:DB:5F:DC:F6:20', 'fingerprint_md5()');
+ok($x509->fingerprint_sha1() eq '78:E9:DD:06:50:62:4D:B9:CB:36:B5:07:67:F2:09:B8:43:BE:15:B3', 'fingerprint_sha1()');
 
 ok($x509->exponent() eq '10001', 'exponent()');
 ok($x509->pub_exponent() eq '10001', 'pub_exponent()'); # Alias
@@ -17,7 +18,13 @@ ok($x509->subject() eq 'C=US, O=VeriSign, Inc., OU=Class 1 Public Primary Certif
 
 ok($x509->is_selfsigned(), 'is_selfsigned()');
 
-ok($x509->hash() eq '2edf7016', 'hash()');
+# For some reason the hash hash changed with v1.0.0
+# Verified with the openssl binary.
+if (Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x1000000f) {
+  ok($x509->hash() eq '24ad0b63', 'hash()');
+} else {
+  ok($x509->hash() eq '2edf7016', 'hash()');
+}
 
 ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/thawte.pem'), 'new_from_file()');
 
@@ -72,3 +79,13 @@ is($x509->subject_name()->get_index_by_long_type("localityName"),2,'Name->get_in
 isa_ok($x509->subject_name()->get_entry_by_type("ST"),"Crypt::OpenSSL::X509::Name_Entry",'Name->get_entry_by_type');
 ok($x509->subject_name()->get_entry_by_type("ST")->is_printableString(),'Name_Entry->is_printableString');
 ok(not($x509->subject_name()->get_entry_by_type("ST")->is_asn1_type(Crypt::OpenSSL::X509::V_ASN1_UTF8STRING)),'Name_Entry->is_asn1_type');
+
+# Check new_from_string / as_string round trip.
+{
+  my $x509 = Crypt::OpenSSL::X509->new_from_string(
+    Crypt::OpenSSL::X509->new_from_file('certs/balt.pem')->as_string(1),
+  1);
+
+  ok($x509);
+  ok($x509->serial() eq '020000B9', 'serial()');
+}
