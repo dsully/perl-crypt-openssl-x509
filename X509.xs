@@ -702,6 +702,7 @@ pubkey_type(x509)
     PREINIT:
         EVP_PKEY *pkey;
     CODE:
+        RETVAL=NULL;
         pkey = X509_get_pubkey(x509);
         if(pkey->type == EVP_PKEY_DSA){
             RETVAL="dsa";
@@ -1270,6 +1271,7 @@ encoding(name_entry)
         Crypt::OpenSSL::X509::Name_Entry name_entry;
 
 		CODE:
+        RETVAL=NULL;
 			if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_PRINTABLESTRING){
 				RETVAL = "printableString";
 			}
