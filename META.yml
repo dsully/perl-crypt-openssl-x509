@@ -20,5 +20,7 @@ no_index:
 requires:
   perl: 5.005
 resources:
+  bugtracker: https://github.com/dsully/perl-crypt-openssl-x509/issues
+  homepage: https://github.com/dsully/perl-crypt-openssl-x509
   license: http://dev.perl.org/licenses/
-version: 1.6
+version: 1.7
