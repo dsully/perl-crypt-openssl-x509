@@ -1312,7 +1312,7 @@ new_from_crl_string(class, string, format = FORMAT_PEM)
   }
 
   if (!bio) {
-    croak("%s: Failed to create BIO", class);
+    croak("%s: Failed to create BIO", SvPV_nolen(class));
   }
 
   if (format == FORMAT_ASN1) {

@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.7.1  Tue Apr  5 20:07:48 PDT 2011
+	- Fix compile issue on i386, etc.
+
 1.7    Tue Mar 29 19:58:08 PDT 2011
 	- Updates from David O'Callaghan to add pubkey, encoding & CRL functions.
 
