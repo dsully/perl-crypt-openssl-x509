@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8    Wed Apr 13 06:22:30 PDT 2011
+	- Bump version to deal with CPAN/Perl versioning madness.
+
 1.7.1  Tue Apr  5 20:07:48 PDT 2011
 	- Fix compile issue on i386, etc.
 
