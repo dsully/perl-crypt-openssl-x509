@@ -41,7 +41,7 @@ is($sub, $sub_ok, "utf8 subject as expected");
 
 # OpenSSL v1.0.0 (and higher?) fails to read this cert.
 SKIP: {
-  skip "OpenSSL v1.0.0 can't read broken certs.", 3 if Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x1000000f;
+  skip "OpenSSL v1.0.0 can't read broken certs.", 3 if Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x10000000;
 
   ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/broken-utf8.pem'), 'new_from_file()');
   $sub = $x509->subject();

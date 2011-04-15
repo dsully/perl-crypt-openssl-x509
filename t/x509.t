@@ -20,7 +20,7 @@ ok($x509->is_selfsigned(), 'is_selfsigned()');
 
 # For some reason the hash hash changed with v1.0.0
 # Verified with the openssl binary.
-if (Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x1000000f) {
+if (Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x10000000) {
   ok($x509->hash() eq '24ad0b63', 'hash()');
 } else {
   ok($x509->hash() eq '2edf7016', 'hash()');
