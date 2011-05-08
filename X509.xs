@@ -853,13 +853,11 @@ basicC(ext, value)
 
   PREINIT:
   BASIC_CONSTRAINTS *bs;
-  const X509V3_EXT_METHOD *method;
   int ret = 0;
 
   CODE:
 
   /* retrieve the value of CA or pathlen in basicConstraints */
-  method = X509V3_EXT_get(ext);
   bs = X509V3_EXT_d2i(ext);
 
   if (strcmp(value, "ca") == 0) {
@@ -1017,7 +1015,6 @@ name(obj)
 
   PREINIT:
   char buf[128];
-  int r;
 
   CODE:
 
@@ -1025,7 +1022,7 @@ name(obj)
     croak("No ObjectID supplied\n");
   }
 
-  r = OBJ_obj2txt(buf, 128, obj, 0);
+  (void)OBJ_obj2txt(buf, 128, obj, 0);
 
   RETVAL = buf;
 
@@ -1038,7 +1035,6 @@ oid(obj)
 
   PREINIT:
   char buf[128];
-  int r;
 
   CODE:
 
@@ -1046,7 +1042,7 @@ oid(obj)
     croak("No ObjectID supplied\n");
   }
 
-  r = OBJ_obj2txt(buf, 128, obj, 1);
+  (void)OBJ_obj2txt(buf, 128, obj, 1);
 
   RETVAL = buf;
 
