@@ -584,6 +584,55 @@ exponent(x509)
   RETVAL
 
 SV*
+dsa_param(x509)
+  Crypt::OpenSSL::X509 x509;
+
+  ALIAS:
+  dsa_p = 1
+  dsa_q = 2
+  dsa_g = 3
+  dsa_y = 4
+
+  PREINIT:
+  EVP_PKEY *pkey;
+  BIO *bio;
+  DSA *dsa;
+
+  CODE:
+
+  pkey = X509_get_pubkey(x509);
+  bio  = sv_bio_create();
+
+  if (pkey == NULL) {
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    croak("DSA param is unavailable\n");
+  }
+
+  if (pkey->type == EVP_PKEY_DSA) {
+    dsa = pkey->pkey.dsa;
+
+    switch(ix) {
+      case 1: BN_print(bio, dsa->p); break;
+      case 2: BN_print(bio, dsa->q); break;
+      case 3: BN_print(bio, dsa->g); break;
+      case 4: BN_print(bio, dsa->pub_key); break;
+    }
+
+  } else {
+    BIO_free_all(bio);
+    EVP_PKEY_free(pkey);
+    croak("Wrong Algorithm type\n");
+  }
+
+  RETVAL = sv_bio_final(bio);
+
+  EVP_PKEY_free(pkey);
+
+  OUTPUT:
+  RETVAL
+
+SV*
 fingerprint_md5(x509)
   Crypt::OpenSSL::X509 x509;
 

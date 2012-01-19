@@ -251,11 +251,27 @@ Return the certificate as a string in the specified format. C<FORMAT> can be one
 
 =item modulus ( )
 
-Return the modulus for an RSA public key as a string of hex digits. For DSA, return the public key. Other algorithms are not supported.
+Return the modulus for an RSA public key as a string of hex digits. For DSA, return the public key y (which is NOT the DSA modulus). Other algorithms are not supported.
 
 =item bit_length ( )
 
 Return the length of the modulus as a number of bits.
+
+=item dsa_p ( )
+
+Return the DSA prime modulus p
+
+=item dsa_q ( )
+
+Return the DSA prime q 
+
+=item dsa_g ( )
+
+Return the DSA generator g 
+
+=item dsa_y ( )
+
+Return the DSA public key y (For DSA keys, this is the same as modulus())
 
 =item fingerprint_md5 ( )
 
