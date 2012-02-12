@@ -829,6 +829,10 @@ pubkey_type(x509)
     CODE:
         RETVAL=NULL;
         pkey = X509_get_pubkey(x509);
+
+        if(!pkey)
+            XSRETURN_UNDEF;
+
         if(pkey->type == EVP_PKEY_DSA){
             RETVAL="dsa";
         }
