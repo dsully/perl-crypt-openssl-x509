@@ -229,6 +229,10 @@ Certificate version as a string.
 
 Signature algorithm name as a string.
 
+=item key_alg_name
+
+Public key algorithm name as a string.
+
 =back
 
 =head2 X509 METHODS
