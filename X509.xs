@@ -267,6 +267,9 @@ BOOT:
   for (i = 0; (name = Crypt__OpenSSL__X509__const[i].n); i++) {
     newCONSTSUB(stash, name, newSViv(Crypt__OpenSSL__X509__const[i].v));
   }
+
+  ERR_load_crypto_strings();
+  OPENSSL_add_all_algorithms_conf();
 }
 
 Crypt::OpenSSL::X509
@@ -502,6 +505,50 @@ as_string(x509, format = FORMAT_PEM)
   OUTPUT:
   RETVAL
 
+const char*
+curve(x509)
+  Crypt::OpenSSL::X509 x509;
+
+  PREINIT:
+  EVP_PKEY *pkey;
+
+  CODE:
+
+  pkey = X509_extract_key(x509);
+
+  if (pkey == NULL) {
+
+    EVP_PKEY_free(pkey);
+    croak("Public key is unavailable\n");
+  }
+
+  if ( pkey->type == EVP_PKEY_EC ) {
+    const EC_GROUP *group; 
+    int nid;
+    
+    if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+       croak("No EC group");
+    }
+
+    nid = EC_GROUP_get_curve_name(group);
+    if ( nid == 0 ) {
+       croak("invalid nid");
+    }
+
+    RETVAL = OBJ_nid2sn(nid);
+
+  } else {
+    EVP_PKEY_free(pkey);
+    croak("Wrong Algorithm type\n");
+  }
+
+
+  EVP_PKEY_free(pkey);
+
+  OUTPUT:
+  RETVAL
+
+
 SV*
 modulus(x509)
   Crypt::OpenSSL::X509 x509;
@@ -512,7 +559,8 @@ modulus(x509)
 
   CODE:
 
-  pkey = X509_get_pubkey(x509);
+  //pkey = X509_get_pubkey(x509);
+  pkey = X509_extract_key(x509);
   bio  = sv_bio_create();
 
   if (pkey == NULL) {
@@ -529,6 +577,23 @@ modulus(x509)
   } else if (pkey->type == EVP_PKEY_DSA) {
 
     BN_print(bio, pkey->pkey.dsa->pub_key);
+
+  } else if ( pkey->type == EVP_PKEY_EC ) {
+
+    const EC_POINT *public_key;
+    const EC_GROUP *group; 
+    BIGNUM  *pub_key=NULL;
+    
+    if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+       croak("No EC group");
+    }
+
+    public_key = EC_KEY_get0_public_key(pkey->pkey.ec);
+    if ((pub_key = EC_POINT_point2bn(group, public_key, EC_KEY_get_conv_form(pkey->pkey.ec), NULL, NULL)) == NULL) {
+       croak("EC library error");
+    }
+
+    BN_print(bio, pub_key);
 
   } else {
 
