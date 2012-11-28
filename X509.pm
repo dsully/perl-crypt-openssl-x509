@@ -249,7 +249,7 @@ Return the certificate as a string in the specified format. C<FORMAT> can be one
 
 =item modulus ( )
 
-Return the modulus for an RSA public key as a string of hex digits. For DSA, return the public key. Other algorithms are not supported.
+Return the modulus for an RSA public key as a string of hex digits. For DSA, and EC return the public key. Other algorithms are not supported.
 
 =item bit_length ( )
 
@@ -267,7 +267,7 @@ Given an offset in seconds, will the certificate be expired?
 
 =item pubkey ( )
 
-Return the RSA or DSA public key.
+Return the RSA, DSA, or EC public key.
 
 =item num_extensions ( )
 
