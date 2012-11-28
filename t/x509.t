@@ -1,5 +1,5 @@
 
-use Test::More tests => 49;
+use Test::More tests => 50;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -32,7 +32,8 @@ ok($x509->email() eq 'server-certs@thawte.com', 'email()');
 
 is($x509->version, '02', 'version');
 
-is($x509->sig_alg_name, 'md5WithRSAEncryption', 'version');
+is($x509->sig_alg_name, 'md5WithRSAEncryption', 'signature algorithm');
+is($x509->key_alg_name, 'rsaEncryption', 'key algorithm');
 
 is($x509->bit_length, 1024, 'bit_length()');
 

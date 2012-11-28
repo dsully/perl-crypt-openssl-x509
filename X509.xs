@@ -364,6 +364,7 @@ accessor(x509)
   email     = 7
   version   = 8
   sig_alg_name = 9
+  key_alg_name = 10
 
   PREINIT:
   BIO *bio;
@@ -422,6 +423,10 @@ accessor(x509)
   } else if (ix == 9) {
 
     i2a_ASN1_OBJECT(bio, x509->sig_alg->algorithm);
+  } else if ( ix == 10 ) {
+  
+    i2a_ASN1_OBJECT(bio, x509->cert_info->key->algor->algorithm);
+
   }
 
   RETVAL = sv_bio_final(bio);
