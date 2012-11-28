@@ -12,12 +12,6 @@ $VERSION = '1.800.2';
   FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
 
-sub Crypt::OpenSSL::X509::bit_length {
-  my $x509 = shift;
-
-  return length($x509->modulus) * 4; # each character is one hex digit = 4 bits
-}
-
 sub Crypt::OpenSSL::X509::has_extension_oid {
   my $x509 = shift;
   my $oid  = shift;

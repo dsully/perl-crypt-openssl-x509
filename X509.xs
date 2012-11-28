@@ -11,6 +11,10 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+#include <openssl/opensslconf.h>
+#ifndef OPENSSL_NO_EC
+# include <openssl/ec.h>
+#endif
 
 /* from openssl/apps/apps.h */
 #define FORMAT_UNDEF    0
@@ -505,6 +509,64 @@ as_string(x509, format = FORMAT_PEM)
   OUTPUT:
   RETVAL
 
+SV*
+bit_length(x509)
+  Crypt::OpenSSL::X509 x509;
+  
+  PREINIT:
+  EVP_PKEY *pkey;
+  int length;
+
+  CODE:
+  pkey = X509_extract_key(x509);
+  if (pkey == NULL) {
+    EVP_PKEY_free(pkey);
+    croak("Public key is unavailable\n");
+  }
+
+  switch(pkey->type) {
+    case EVP_PKEY_RSA:
+      length = BN_num_bits(pkey->pkey.rsa->n);
+      break;
+    case EVP_PKEY_DSA:
+      length = BN_num_bits(pkey->pkey.dsa->p);
+      break;
+#ifndef OPENSSL_NO_EC
+    case EVP_PKEY_EC:
+    {
+      const EC_GROUP *group;       
+      BIGNUM* ec_order;
+      ec_order = BN_new();
+      if ( !ec_order ) {
+        EVP_PKEY_free(pkey);
+	croak("Could not malloc bignum");
+      }
+      //
+      if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+        EVP_PKEY_free(pkey);
+        croak("No EC group");
+      }
+      //
+      if (!EC_GROUP_get_order(group, ec_order, NULL)) {
+        EVP_PKEY_free(pkey);
+        croak("Could not get ec-group order");
+      }
+      length = BN_num_bits(ec_order);
+      //
+      BN_free(ec_order);
+      break;
+    }
+#endif
+    default:
+      EVP_PKEY_free(pkey);
+      croak("Unknown public key type");
+  }
+
+  RETVAL = newSVuv(length);
+
+  OUTPUT:
+  RETVAL
+
 const char*
 curve(x509)
   Crypt::OpenSSL::X509 x509;
@@ -513,37 +575,33 @@ curve(x509)
   EVP_PKEY *pkey;
 
   CODE:
-
+#ifdef OPENSSL_NO_EC
+  croak("OpenSSL without EC-support");
+#else
   pkey = X509_extract_key(x509);
-
   if (pkey == NULL) {
-
     EVP_PKEY_free(pkey);
     croak("Public key is unavailable\n");
   }
-
   if ( pkey->type == EVP_PKEY_EC ) {
     const EC_GROUP *group; 
     int nid;
-    
     if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+       EVP_PKEY_free(pkey);
        croak("No EC group");
     }
-
     nid = EC_GROUP_get_curve_name(group);
     if ( nid == 0 ) {
+       EVP_PKEY_free(pkey);
        croak("invalid nid");
     }
-
     RETVAL = OBJ_nid2sn(nid);
-
   } else {
     EVP_PKEY_free(pkey);
     croak("Wrong Algorithm type\n");
   }
-
-
   EVP_PKEY_free(pkey);
+#endif
 
   OUTPUT:
   RETVAL
@@ -559,7 +617,6 @@ modulus(x509)
 
   CODE:
 
-  //pkey = X509_get_pubkey(x509);
   pkey = X509_extract_key(x509);
   bio  = sv_bio_create();
 
@@ -577,24 +634,24 @@ modulus(x509)
   } else if (pkey->type == EVP_PKEY_DSA) {
 
     BN_print(bio, pkey->pkey.dsa->pub_key);
-
+#ifndef OPENSSL_NO_EC
   } else if ( pkey->type == EVP_PKEY_EC ) {
-
     const EC_POINT *public_key;
     const EC_GROUP *group; 
     BIGNUM  *pub_key=NULL;
-    
     if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+       BIO_free_all(bio);
+       EVP_PKEY_free(pkey);
        croak("No EC group");
     }
-
     public_key = EC_KEY_get0_public_key(pkey->pkey.ec);
     if ((pub_key = EC_POINT_point2bn(group, public_key, EC_KEY_get_conv_form(pkey->pkey.ec), NULL, NULL)) == NULL) {
+       BIO_free_all(bio);
+       EVP_PKEY_free(pkey);
        croak("EC library error");
     }
-
     BN_print(bio, pub_key);
-
+#endif
   } else {
 
     BIO_free_all(bio);
@@ -732,7 +789,10 @@ pubkey(x509)
   } else if (pkey->type == EVP_PKEY_DSA) {
 
     PEM_write_bio_DSA_PUBKEY(bio, pkey->pkey.dsa);
-
+#ifndef OPENSSL_NO_EC
+  } else if ( pkey->type == EVP_PKEY_EC ) {
+    PEM_write_bio_EC_PUBKEY(bio, pkey->pkey.ec);
+#endif
   } else {
 
     BIO_free_all(bio);
@@ -774,7 +834,12 @@ pubkey_type(x509)
         }
         else if(pkey->type == EVP_PKEY_RSA){
             RETVAL="rsa";
-        }
+#ifndef OPENSSL_NO_EC
+	} else if ( pkey->type == EVP_PKEY_EC ) {
+	    RETVAL="ec";
+#endif
+        } 
+
     OUTPUT:
     RETVAL
 
