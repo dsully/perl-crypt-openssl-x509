@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.3  Mon Aug 12 05:50:58 PDT 2013
+	- Fix Github Issues #2, 10, 15, 17, 22, 23, 24 & 25
+
 1.8.2  Sat May  7 20:19:58 PDT 2011
 	- Fix warnings under gcc 4.6
 

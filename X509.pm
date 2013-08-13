@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.800.2';
+$VERSION = '1.803';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -126,7 +126,7 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   print $x509->exponent() . "\n";
   print $x509->fingerprint_sha1() . "\n";
   print $x509->fingerprint_md5() . "\n";
-  print $x509->as_string(Crypt::OpenSSL::X509::FORMAT_TEXT) . "\n";
+  print $x509->as_string() . "\n";
 
   my $x509 = Crypt::OpenSSL::X509->new_from_string(
     $der_encoded_data, Crypt::OpenSSL::X509::FORMAT_ASN1
@@ -134,9 +134,9 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
 
   # given a time offset of $seconds, will the certificate be valid?
   if ($x509->checkend($seconds)) {
-    # cert is ok at $seconds offset
-  } else {
     # cert is expired at $seconds offset
+  } else {
+    # cert is ok at $seconds offset
   }
 
   my $exts = $x509->extensions_by_oid();
@@ -265,7 +265,7 @@ Return the specified message digest for the certificate.
 
 =item checkend( OFFSET )
 
-Given an offset in seconds, will the certificate be expired?
+Given an offset in seconds, will the certificate be expired? Returns True if the certificate will be expired. False otherwise.
 
 =item pubkey ( )
 
@@ -281,7 +281,9 @@ Return the Extension specified by the integer C<INDEX>.
 Methods for handling Extension objects are given below.
 
 =item extensions_by_oid ( )
+
 =item extensions_by_name ( )
+
 =item extensions_by_long_name ( )
 
 Return a hash of Extensions indexed by OID or name.
@@ -407,7 +409,7 @@ Daniel Kahn Gillmor E<lt>dkg@fifthhorseman.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2011 by Dan Sully
+Copyright 2004-2013 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
