@@ -12,12 +12,6 @@ $VERSION = '1.803';
   FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
 
-sub Crypt::OpenSSL::X509::bit_length {
-  my $x509 = shift;
-
-  return length($x509->modulus) * 4; # each character is one hex digit = 4 bits
-}
-
 sub Crypt::OpenSSL::X509::has_extension_oid {
   my $x509 = shift;
   my $oid  = shift;
@@ -229,6 +223,14 @@ Certificate version as a string.
 
 Signature algorithm name as a string.
 
+=item key_alg_name
+
+Public key algorithm name as a string.
+
+=item curve
+
+Name of the EC curve used in the public key.
+
 =back
 
 =head2 X509 METHODS
@@ -251,7 +253,7 @@ Return the certificate as a string in the specified format. C<FORMAT> can be one
 
 =item modulus ( )
 
-Return the modulus for an RSA public key as a string of hex digits. For DSA, return the public key. Other algorithms are not supported.
+Return the modulus for an RSA public key as a string of hex digits. For DSA and EC return the public key. Other algorithms are not supported.
 
 =item bit_length ( )
 
@@ -269,7 +271,7 @@ Given an offset in seconds, will the certificate be expired? Returns True if the
 
 =item pubkey ( )
 
-Return the RSA or DSA public key.
+Return the RSA, DSA, or EC public key.
 
 =item num_extensions ( )
 
