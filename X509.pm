@@ -328,7 +328,7 @@ Return the long name of the object as a string.
 
 =item oid ( )
 
-Return the numeric dot-seperated form of the object identifier as a string.
+Return the numeric dot-separated form of the object identifier as a string.
 
 =back
 
