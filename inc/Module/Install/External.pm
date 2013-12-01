@@ -8,9 +8,26 @@ use Module::Install::Base ();
 
 use vars qw{$VERSION $ISCORE @ISA};
 BEGIN {
-	$VERSION = '1.00';
+	$VERSION = '1.06';
 	$ISCORE  = 1;
 	@ISA     = qw{Module::Install::Base};
+}
+
+sub requires_xs {
+	my $self = shift;
+
+	# First check for the basic C compiler
+	$self->requires_external_cc;
+
+	# We need a C compiler that can build XS files
+	unless ( $self->can_xs ) {
+		print "Unresolvable missing external dependency.\n";
+		print "This package requires perl's header files.\n";
+		print STDERR "NA: Unable to build distribution on this platform.\n";
+		exit(0);
+	}
+
+	1;
 }
 
 sub requires_external_cc {
@@ -41,7 +58,7 @@ sub requires_external_bin {
 	$self->load('can_run');
 
 	# Locate the bin
-	print "Locating required external dependency bin:$bin...";
+	print "Locating bin:$bin...";
 	my $found_bin = $self->can_run( $bin );
 	if ( $found_bin ) {
 		print " found at $found_bin.\n";
@@ -63,4 +80,4 @@ sub requires_external_bin {
 
 __END__
 
-#line 138
+#line 171
