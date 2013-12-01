@@ -235,7 +235,7 @@ void _decode_netscape(BIO *bio, X509 *x509) {
     ah.data   = (char *)x509;
     ah.meth   = X509_asn1_meth();
 
-    ASN1_i2d_bio(i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
+    ASN1_i2d_bio((i2d_of_void *)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
 
 #endif
 }
