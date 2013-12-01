@@ -14,15 +14,20 @@ bugtracker 'https://github.com/dsully/perl-crypt-openssl-x509/issues';
 requires_external_cc();
 
 if ($Config::Config{myuname} =~ /^Win(32|64) strawberry-perl\b/) {
-    cc_lib_links("eay$1");
+    libs ["eay$1"];
 }
 else {
-    cc_inc_paths('/usr/include/openssl', '/usr/local/include/ssl', '/usr/local/ssl/include');
-    cc_lib_paths('/usr/lib', '/usr/local/lib', '/usr/local/ssl/lib');
+    inc '-I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
 
-    cc_lib_links('crypto');
+    libs '-L/usr/lib -L/usr/local/lib -L/usr/local/ssl/lib -lcrypto';
 
-    cc_optimize_flags('-O2 -g -Wall -Werror');
+    if ($Config::Config{myuname} =~ /darwin/i) {
+      cc_optimize_flags('-O2 -g -Wall -Werror -Wno-deprecated-declarations');
+    } elsif ($Config::Config{myuname} =~ /sunos|solaris/i) {
+      # Any SunStudio flags?
+    } else {
+      cc_optimize_flags('-O2 -g -Wall -Werror');
+    }
 }
 
 auto_install();
