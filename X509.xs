@@ -576,11 +576,11 @@ curve(x509)
   Crypt::OpenSSL::X509 x509;
 
   CODE:
+  EVP_PKEY *pkey;
 #ifdef OPENSSL_NO_EC
   if ( x509 ) {} // fix unused variable warning.
   croak("OpenSSL without EC-support");
 #else
-  EVP_PKEY *pkey;
   pkey = X509_extract_key(x509);
   if (pkey == NULL) {
     EVP_PKEY_free(pkey);
