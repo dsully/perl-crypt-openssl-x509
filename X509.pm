@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.803';
+$VERSION = '1.804';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -402,7 +402,7 @@ OpenSSL(1), Crypt::OpenSSL::RSA, Crypt::OpenSSL::Bignum
 
 =head1 AUTHOR
 
-Dan Sully, E<lt>daniel@cpan.orgE<gt>
+Dan Sully
 
 =head1 CONTRIBUTORS
 
