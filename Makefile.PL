@@ -13,10 +13,6 @@ bugtracker 'https://github.com/dsully/perl-crypt-openssl-x509/issues';
 
 requires_external_cc();
 
-if ($Config::Config{myuname} =~ /^Win(32|64) strawberry-perl\b/) {
-    libs ["eay$1"];
-}
-else {
     inc '-I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
 
     libs '-L/usr/lib -L/usr/local/lib -L/usr/local/ssl/lib -lcrypto';
@@ -28,7 +24,6 @@ else {
     } else {
       cc_optimize_flags('-O2 -g -Wall -Werror');
     }
-}
 
 auto_install();
 WriteAll();
