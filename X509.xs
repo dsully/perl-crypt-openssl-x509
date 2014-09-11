@@ -575,8 +575,12 @@ const char*
 curve(x509)
   Crypt::OpenSSL::X509 x509;
 
-  CODE:
+  PREINIT:
+#ifndef OPENSSL_NO_EC
   EVP_PKEY *pkey;
+#endif
+
+  CODE:
 #ifdef OPENSSL_NO_EC
   if ( x509 ) {} // fix unused variable warning.
   croak("OpenSSL without EC-support");
