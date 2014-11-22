@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.804';
+$VERSION = '1.805';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -118,8 +118,8 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   print $x509->notAfter() . "\n";
   print $x509->modulus() . "\n";
   print $x509->exponent() . "\n";
-  print $x509->fingerprint_sha1() . "\n";
   print $x509->fingerprint_md5() . "\n";
+  print $x509->fingerprint_sha256() . "\n";
   print $x509->as_string() . "\n";
 
   my $x509 = Crypt::OpenSSL::X509->new_from_string(
@@ -262,6 +262,14 @@ Return the length of the modulus as a number of bits.
 =item fingerprint_md5 ( )
 
 =item fingerprint_sha1 ( )
+
+=item fingerprint_sha224 ( )
+
+=item fingerprint_sha256 ( )
+
+=item fingerprint_sha384 ( )
+
+=item fingerprint_sha512 ( )
 
 Return the specified message digest for the certificate.
 
@@ -411,7 +419,7 @@ Daniel Kahn Gillmor E<lt>dkg@fifthhorseman.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2013 by Dan Sully
+Copyright 2004-2014 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
