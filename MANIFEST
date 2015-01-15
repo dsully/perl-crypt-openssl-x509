@@ -1,5 +1,5 @@
 certs/thawte.pem
-thawte-ec.pem
+certs/thawte-ec.pem
 certs/vsign1.pem
 certs/balt.pem
 certs/broken-utf8.pem
