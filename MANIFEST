@@ -5,6 +5,7 @@ certs/balt.pem
 certs/broken-utf8.pem
 certs/turk.pem
 Changes
+hints/MSWin32.pl
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm

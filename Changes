@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.6  Sat Jan 24 2015
+        - Patch from James Hunt to print OpenSSL version during tests.
+        - Various MANIFEST fixes.
+
 1.8.5  Sat Nov 22 2014
         - Patch from Uli Scholler to expose more SHA1 hash functions.
 
