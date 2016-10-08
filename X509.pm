@@ -8,7 +8,7 @@ use base qw(Exporter);
 $VERSION = '1.807';
 
 @EXPORT_OK = qw(
-  FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
+  FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
   FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
 
@@ -161,7 +161,7 @@ None by default.
 
 On request:
 
-	FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
+	FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
 	FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC
 
 
@@ -249,7 +249,7 @@ Return Boolean value if subject and issuer name are the same.
 
 =item as_string ( [ FORMAT ] )
 
-Return the certificate as a string in the specified format. C<FORMAT> can be one of C<FORMAT_PEM> (the default), C<FORMAT_ASN1>, or C<FORMAT_NETSCAPE>.
+Return the certificate as a string in the specified format. C<FORMAT> can be one of C<FORMAT_PEM> (the default) or C<FORMAT_ASN1>.
 
 =item modulus ( )
 
