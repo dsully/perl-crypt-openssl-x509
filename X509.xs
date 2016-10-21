@@ -21,13 +21,10 @@
 #define FORMAT_ASN1     1
 #define FORMAT_TEXT     2
 #define FORMAT_PEM      3
-#define FORMAT_NETSCAPE 4
 #define FORMAT_PKCS12   5
 #define FORMAT_SMIME    6
 #define FORMAT_ENGINE   7
 #define FORMAT_IISSGC   8
-
-#define NETSCAPE_CERT_HDR "certificate"
 
 /* fake our package name */
 typedef X509*  Crypt__OpenSSL__X509;
@@ -44,6 +41,79 @@ typedef X509_CRL* Crypt__OpenSSL__X509__CRL;
 
 #ifndef sk_OPENSSL_STRING_value
 #define sk_OPENSSL_STRING_value sk_value
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+#define const_ossl11
+
+static ASN1_INTEGER *X509_get0_serialNumber(const X509 *a)
+{
+  return a->cert_info->serialNumber;
+}
+
+static void RSA_get0_key(const RSA *r,
+                         const BIGNUM **n, const BIGNUM **e, const BIGNUM **d)
+{
+  if (n != NULL)
+    *n = r->n;
+  if (e != NULL)
+    *e = r->e;
+  if (d != NULL)
+    *d = r->d;
+}
+
+static RSA *EVP_PKEY_get0_RSA(EVP_PKEY *pkey)
+{
+  if (pkey->type != EVP_PKEY_RSA)
+    return NULL;
+  return pkey->pkey.rsa;
+}
+
+static void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
+                                    X509_ALGOR **palg)
+{
+  if (psig != NULL)
+    *psig = crl->signature;
+  if (palg != NULL)
+    *palg = crl->sig_alg;
+}
+
+static void DSA_get0_pqg(const DSA *d,
+                         const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
+{
+  if (p != NULL)
+    *p = d->p;
+  if (q != NULL)
+    *q = d->q;
+  if (g != NULL)
+    *g = d->g;
+}
+
+static void DSA_get0_key(const DSA *d,
+                         const BIGNUM **pub_key, const BIGNUM **priv_key)
+{
+  if (pub_key != NULL)
+    *pub_key = d->pub_key;
+  if (priv_key != NULL)
+    *priv_key = d->priv_key;
+}
+
+static DSA *EVP_PKEY_get0_DSA(EVP_PKEY *pkey)
+{
+  if (pkey->type != EVP_PKEY_DSA)
+    return NULL;
+  return pkey->pkey.dsa;
+}
+
+static EC_KEY *EVP_PKEY_get0_EC_KEY(EVP_PKEY *pkey)
+{
+  if (pkey->type != EVP_PKEY_EC)
+    return NULL;
+  return pkey->pkey.ec;
+}
+
+#else
+#define const_ossl11 const
 #endif
 
 /* Unicode 0xfffd */
@@ -211,35 +281,6 @@ static HV* hv_exts(X509* x509, int no_name) {
   return RETVAL;
 }
 
-void _decode_netscape(BIO *bio, X509 *x509) {
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-
-    NETSCAPE_X509 nx;
-    ASN1_OCTET_STRING os;
-
-    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
-    os.length = strlen(NETSCAPE_CERT_HDR);
-    nx.header = &os;
-    nx.cert   = x509;
-
-    ASN1_item_i2d_bio(ASN1_ITEM_rptr(NETSCAPE_X509), bio, &nx);
-
-#else
-
-    ASN1_HEADER ah;
-    ASN1_OCTET_STRING os;
-
-    os.data   = (unsigned char *)NETSCAPE_CERT_HDR;
-    os.length = strlen(NETSCAPE_CERT_HDR);
-    ah.header = &os;
-    ah.data   = (char *)x509;
-    ah.meth   = X509_asn1_meth();
-
-    ASN1_i2d_bio((i2d_of_void *)i2d_ASN1_HEADER, bio, (unsigned char *)&ah);
-
-#endif
-}
-
 MODULE = Crypt::OpenSSL::X509    PACKAGE = Crypt::OpenSSL::X509
 
 PROTOTYPES: DISABLE
@@ -255,7 +296,6 @@ BOOT:
   {"FORMAT_ASN1", FORMAT_ASN1},
   {"FORMAT_TEXT", FORMAT_TEXT},
   {"FORMAT_PEM", FORMAT_PEM},
-  {"FORMAT_NETSCAPE", FORMAT_NETSCAPE},
   {"FORMAT_PKCS12", FORMAT_PKCS12},
   {"FORMAT_SMIME", FORMAT_SMIME},
   {"FORMAT_ENGINE", FORMAT_ENGINE},
@@ -354,7 +394,9 @@ __X509_cleanup(void)
 
   CRYPTO_cleanup_all_ex_data();
   ERR_free_strings();
+#if OPENSSL_VERSION_NUMBER < 0x10100000
   ERR_remove_state(0);
+#endif
   EVP_cleanup();
 
 SV*
@@ -398,7 +440,7 @@ accessor(x509)
 
   } else if (ix == 3) {
 
-    i2a_ASN1_INTEGER(bio, x509->cert_info->serialNumber);
+    i2a_ASN1_INTEGER(bio, X509_get0_serialNumber(x509));
 
   } else if (ix == 4) {
 
@@ -425,14 +467,24 @@ accessor(x509)
 
   } else if (ix == 8) {
 
-    i2a_ASN1_INTEGER(bio, x509->cert_info->version);
+    BIO_printf(bio, "%02ld", X509_get_version(x509));
 
   } else if (ix == 9) {
+    const_ossl11 X509_ALGOR *palg;
+    const_ossl11 ASN1_OBJECT *paobj;
 
-    i2a_ASN1_OBJECT(bio, x509->sig_alg->algorithm);
+    X509_get0_signature(NULL, &palg, x509);
+    X509_ALGOR_get0(&paobj, NULL, NULL, palg);
+
+    i2a_ASN1_OBJECT(bio, paobj);
   } else if ( ix == 10 ) {
+    X509_PUBKEY *pkey;
+    ASN1_OBJECT *ppkalg;
 
-    i2a_ASN1_OBJECT(bio, x509->cert_info->key->algor->algorithm);
+    pkey = X509_get_X509_PUBKEY(x509);
+    X509_PUBKEY_get0_param(&ppkalg, NULL, NULL, NULL, pkey);
+
+    i2a_ASN1_OBJECT(bio, ppkalg);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -465,12 +517,14 @@ sig_print(x509)
   PREINIT:
   BIO *bio;
   unsigned char *s;
+  const_ossl11 ASN1_BIT_STRING *psig;
   int n,i;
 
   CODE:
 
-  n   = x509->signature->length;
-  s   = x509->signature->data;
+  X509_get0_signature(&psig, NULL, x509);
+  n   = psig->length;
+  s   = psig->data;
   bio = sv_bio_create();
 
   for (i=0; i<n; i++) {
@@ -503,9 +557,6 @@ as_string(x509, format = FORMAT_PEM)
 
     i2d_X509_bio(bio, x509);
 
-  } else if (format == FORMAT_NETSCAPE) {
-
-    _decode_netscape(bio, x509);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -519,6 +570,11 @@ bit_length(x509)
 
   PREINIT:
   EVP_PKEY *pkey;
+  DSA *dsa_pkey;
+  RSA *rsa_pkey;
+  EC_KEY *ec_pkey;
+  const BIGNUM *p;
+  const BIGNUM *n;
   int length;
 
   CODE:
@@ -528,12 +584,16 @@ bit_length(x509)
     croak("Public key is unavailable\n");
   }
 
-  switch(pkey->type) {
+  switch(EVP_PKEY_base_id(pkey)) {
     case EVP_PKEY_RSA:
-      length = BN_num_bits(pkey->pkey.rsa->n);
+      rsa_pkey = EVP_PKEY_get0_RSA(pkey);
+      RSA_get0_key(rsa_pkey, &n, NULL, NULL);
+      length = BN_num_bits(n);
       break;
     case EVP_PKEY_DSA:
-      length = BN_num_bits(pkey->pkey.dsa->p);
+      dsa_pkey = EVP_PKEY_get0_DSA(pkey);
+      DSA_get0_pqg(dsa_pkey, &p, NULL, NULL);
+      length = BN_num_bits(p);
       break;
 #ifndef OPENSSL_NO_EC
     case EVP_PKEY_EC:
@@ -545,8 +605,8 @@ bit_length(x509)
         EVP_PKEY_free(pkey);
         croak("Could not malloc bignum");
       }
-      //
-      if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+      ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
+      if ( (group = EC_KEY_get0_group(ec_pkey)) == NULL) {
         EVP_PKEY_free(pkey);
         croak("No EC group");
       }
@@ -590,10 +650,12 @@ curve(x509)
     EVP_PKEY_free(pkey);
     croak("Public key is unavailable\n");
   }
-  if ( pkey->type == EVP_PKEY_EC ) {
+  if ( EVP_PKEY_base_id(pkey) == EVP_PKEY_EC ) {
     const EC_GROUP *group;
+    EC_KEY *ec_pkey;
     int nid;
-    if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+    ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
+    if ( (group = EC_KEY_get0_group(ec_pkey)) == NULL) {
        EVP_PKEY_free(pkey);
        croak("No EC group");
     }
@@ -621,6 +683,7 @@ modulus(x509)
   PREINIT:
   EVP_PKEY *pkey;
   BIO *bio;
+  int pkey_id;
 
   CODE:
 
@@ -634,25 +697,38 @@ modulus(x509)
     croak("Modulus is unavailable\n");
   }
 
-  if (pkey->type == EVP_PKEY_RSA) {
+  pkey_id = EVP_PKEY_base_id(pkey);
+  if (pkey_id == EVP_PKEY_RSA) {
+    RSA *rsa_pkey;
+    const BIGNUM *n;
 
-    BN_print(bio, pkey->pkey.rsa->n);
+    rsa_pkey = EVP_PKEY_get0_RSA(pkey);
+    RSA_get0_key(rsa_pkey, &n, NULL, NULL);
 
-  } else if (pkey->type == EVP_PKEY_DSA) {
+    BN_print(bio, n);
 
-    BN_print(bio, pkey->pkey.dsa->pub_key);
+  } else if (pkey_id == EVP_PKEY_DSA) {
+    DSA *dsa_pkey;
+    const BIGNUM *pub_key;
+
+    dsa_pkey = EVP_PKEY_get0_DSA(pkey);
+    DSA_get0_key(dsa_pkey, &pub_key, NULL);
+    BN_print(bio, pub_key);
 #ifndef OPENSSL_NO_EC
-  } else if ( pkey->type == EVP_PKEY_EC ) {
+  } else if ( pkey_id == EVP_PKEY_EC ) {
     const EC_POINT *public_key;
     const EC_GROUP *group;
+    EC_KEY *ec_pkey;
     BIGNUM  *pub_key=NULL;
-    if ( (group = EC_KEY_get0_group(pkey->pkey.ec)) == NULL) {
+
+    ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
+    if ( (group = EC_KEY_get0_group(ec_pkey)) == NULL) {
        BIO_free_all(bio);
        EVP_PKEY_free(pkey);
        croak("No EC group");
     }
-    public_key = EC_KEY_get0_public_key(pkey->pkey.ec);
-    if ((pub_key = EC_POINT_point2bn(group, public_key, EC_KEY_get_conv_form(pkey->pkey.ec), NULL, NULL)) == NULL) {
+    public_key = EC_KEY_get0_public_key(ec_pkey);
+    if ((pub_key = EC_POINT_point2bn(group, public_key, EC_KEY_get_conv_form(ec_pkey), NULL, NULL)) == NULL) {
        BIO_free_all(bio);
        EVP_PKEY_free(pkey);
        croak("EC library error");
@@ -697,8 +773,14 @@ exponent(x509)
     croak("Exponent is unavailable\n");
   }
 
-  if (pkey->type == EVP_PKEY_RSA) {
-    BN_print(bio, pkey->pkey.rsa->e);
+  if (EVP_PKEY_base_id(pkey) == EVP_PKEY_RSA) {
+    RSA *rsa_pkey;
+    const BIGNUM *e;
+
+    rsa_pkey = EVP_PKEY_get0_RSA(pkey);
+    RSA_get0_key(rsa_pkey, NULL, &e, NULL);
+
+    BN_print(bio, e);
   } else {
     BIO_free_all(bio);
     EVP_PKEY_free(pkey);
@@ -780,6 +862,7 @@ pubkey(x509)
   PREINIT:
   EVP_PKEY *pkey;
   BIO *bio;
+  int pkey_id;
 
   CODE:
 
@@ -793,16 +876,25 @@ pubkey(x509)
     croak("Public Key is unavailable\n");
   }
 
-  if (pkey->type == EVP_PKEY_RSA) {
+  pkey_id = EVP_PKEY_base_id(pkey);
+  if (pkey_id == EVP_PKEY_RSA) {
+    RSA *rsa_pkey;
 
-    PEM_write_bio_RSAPublicKey(bio, pkey->pkey.rsa);
+    rsa_pkey = EVP_PKEY_get0_RSA(pkey);
+    PEM_write_bio_RSAPublicKey(bio, rsa_pkey);
 
-  } else if (pkey->type == EVP_PKEY_DSA) {
+  } else if (pkey_id == EVP_PKEY_DSA) {
+    DSA *dsa_pkey;
 
-    PEM_write_bio_DSA_PUBKEY(bio, pkey->pkey.dsa);
+    dsa_pkey = EVP_PKEY_get0_DSA(pkey);
+
+    PEM_write_bio_DSA_PUBKEY(bio, dsa_pkey);
 #ifndef OPENSSL_NO_EC
-  } else if ( pkey->type == EVP_PKEY_EC ) {
-    PEM_write_bio_EC_PUBKEY(bio, pkey->pkey.ec);
+  } else if (pkey_id == EVP_PKEY_EC ) {
+    EC_KEY *ec_pkey;
+
+    ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
+    PEM_write_bio_EC_PUBKEY(bio, ec_pkey);
 #endif
   } else {
 
@@ -823,6 +915,7 @@ pubkey_type(x509)
         Crypt::OpenSSL::X509 x509;
     PREINIT:
         EVP_PKEY *pkey;
+	int pkey_id;
     CODE:
         RETVAL=NULL;
         pkey = X509_get_pubkey(x509);
@@ -830,13 +923,14 @@ pubkey_type(x509)
         if(!pkey)
             XSRETURN_UNDEF;
 
-        if (pkey->type == EVP_PKEY_DSA) {
+	pkey_id = EVP_PKEY_base_id(pkey);
+        if (pkey_id == EVP_PKEY_DSA) {
             RETVAL="dsa";
 
-        } else if (pkey->type == EVP_PKEY_RSA) {
+        } else if (pkey_id == EVP_PKEY_RSA) {
             RETVAL="rsa";
 #ifndef OPENSSL_NO_EC
-        } else if ( pkey->type == EVP_PKEY_EC ) {
+        } else if (pkey_id == EVP_PKEY_EC ) {
             RETVAL="ec";
 #endif
         }
@@ -1479,7 +1573,13 @@ CRL_accessor(crl)
     RETVAL = sv_bio_final(bio);
 
   } else if (ix == 2) {
-    i2a_ASN1_OBJECT(bio, crl->sig_alg->algorithm);
+    const_ossl11 X509_ALGOR *palg;
+    const_ossl11 ASN1_OBJECT *paobj;
+
+    X509_CRL_get0_signature(crl, NULL, &palg);
+    X509_ALGOR_get0(&paobj, NULL, NULL, palg);
+
+    i2a_ASN1_OBJECT(bio, paobj);
   }
 
   RETVAL = sv_bio_final(bio);
