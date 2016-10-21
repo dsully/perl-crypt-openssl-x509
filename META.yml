@@ -8,7 +8,7 @@ configure_requires:
   ExtUtils::MakeMaker: 6.36
 distribution_type: module
 dynamic_config: 1
-generated_by: 'Module::Install version 1.06'
+generated_by: 'Module::Install version 1.16'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,10 +19,10 @@ no_index:
     - inc
     - t
 requires:
-  perl: 5.005
+  perl: '5.005'
 resources:
   bugtracker: https://github.com/dsully/perl-crypt-openssl-x509/issues
   homepage: https://github.com/dsully/perl-crypt-openssl-x509
   license: http://dev.perl.org/licenses/
   repository: https://github.com/dsully/perl-crypt-openssl-x509
-version: 1.804
+version: '1.807'
