@@ -35,6 +35,9 @@ typedef X509_NAME_ENTRY* Crypt__OpenSSL__X509__Name_Entry;
 typedef X509_CRL* Crypt__OpenSSL__X509__CRL;
 
 /* 1.0 backwards compat */
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+#define const_ossl11
+
 #ifndef sk_OPENSSL_STRING_num
 #define sk_OPENSSL_STRING_num sk_num
 #endif
@@ -42,9 +45,6 @@ typedef X509_CRL* Crypt__OpenSSL__X509__CRL;
 #ifndef sk_OPENSSL_STRING_value
 #define sk_OPENSSL_STRING_value sk_value
 #endif
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-#define const_ossl11
 
 static ASN1_INTEGER *X509_get0_serialNumber(const X509 *a)
 {
