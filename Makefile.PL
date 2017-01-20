@@ -13,17 +13,16 @@ bugtracker 'https://github.com/dsully/perl-crypt-openssl-x509/issues';
 
 requires_external_cc();
 
-    inc '-I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
+inc '-I/usr/local/opt/openssl/include -I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
+libs '-L/usr/local/opt/openssl/lib -L/usr/lib -L/usr/local/lib -L/usr/local/ssl/lib -lcrypto -lssl';
 
-    libs '-L/usr/lib -L/usr/local/lib -L/usr/local/ssl/lib -lcrypto';
-
-    if ($Config::Config{myuname} =~ /darwin/i) {
-      cc_optimize_flags('-O2 -g -Wall -Werror -Wno-deprecated-declarations');
-    } elsif ($Config::Config{myuname} =~ /sunos|solaris/i) {
-      # Any SunStudio flags?
-    } else {
-      cc_optimize_flags('-O2 -g -Wall -Werror');
-    }
+if ($Config::Config{myuname} =~ /darwin/i) {
+  cc_optimize_flags('-O2 -g -Wall -Werror -Wno-deprecated-declarations');
+} elsif ($Config::Config{myuname} =~ /sunos|solaris/i) {
+  # Any SunStudio flags?
+} else {
+  cc_optimize_flags('-O2 -g -Wall -Werror');
+}
 
 auto_install();
 WriteAll();
