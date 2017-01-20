@@ -1,4 +1,9 @@
 META.yml
+MYMETA.json
+MYMETA.yml
 Makefile
 X509.c
+X509.o
 X509.bs
+blib/
+pm_to_blib
