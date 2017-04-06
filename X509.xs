@@ -1042,7 +1042,7 @@ value(ext)
     croak("No extension supplied\n");
   }
 
-  ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
+  ASN1_STRING_print_ex(bio, X509_EXTENSION_get_data(ext), ASN1_STRFLGS_DUMP_ALL);
 
   RETVAL = sv_bio_final(bio);
 
