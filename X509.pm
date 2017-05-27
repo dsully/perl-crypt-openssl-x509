@@ -320,9 +320,11 @@ Methods for handling ObjectID objects are given below.
 
 =item value ( )
 
-Return the value or data of the extension.
-FIXME: the value is returned as a string but may represent
-a complex object.
+Return the value of the extension as an asn1parse(1) style hex dump.
+
+=item as_string ( )
+
+Return a human-readable version of the extension as formatted by X509V3_EXT_print. Note that this will return an empty string for OIDs with unknown ASN.1 encodings.
 
 =back
 

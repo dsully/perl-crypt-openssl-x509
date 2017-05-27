@@ -78,6 +78,15 @@ static void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING *
     *palg = crl->sig_alg;
 }
 
+static void X509_get0_signature(const_ossl11 ASN1_BIT_STRING **psig, const_ossl11 X509_ALGOR **palg,
+                                const_ossl11 X509 *x)
+{
+    if (psig != NULL)
+        *psig = x->signature;
+    if (palg != NULL)
+        *palg = x->sig_alg;
+}
+
 static void DSA_get0_pqg(const DSA *d,
                          const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
 {
@@ -1042,7 +1051,7 @@ value(ext)
     croak("No extension supplied\n");
   }
 
-  ASN1_STRING_print(bio, X509_EXTENSION_get_data(ext));
+  ASN1_STRING_print_ex(bio, X509_EXTENSION_get_data(ext), ASN1_STRFLGS_DUMP_ALL);
 
   RETVAL = sv_bio_final(bio);
 
