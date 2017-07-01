@@ -1,0 +1,18 @@
+# REF: https://docs.travis-ci.com/user/getting-started/
+
+sudo: enabled
+
+# REF: https://docs.travis-ci.com/user/languages/perl/
+
+language: perl
+perl:
+  - "5.26"
+  - "5.20"
+  - "5.10"
+  - "5.8"
+
+before_install:
+    - sudo apt-get update -q
+    - sudo apt-get install -y libssl-dev
+    - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+    - source ~/travis-perl-helpers/init --auto
