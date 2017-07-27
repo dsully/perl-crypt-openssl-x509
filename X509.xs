@@ -78,14 +78,16 @@ static void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING *
     *palg = crl->sig_alg;
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x10002000
 static void X509_get0_signature(const_ossl11 ASN1_BIT_STRING **psig, const_ossl11 X509_ALGOR **palg,
-                                const_ossl11 X509 *x)
+                                const X509 *x)
 {
     if (psig != NULL)
         *psig = x->signature;
     if (palg != NULL)
         *palg = x->sig_alg;
 }
+#endif
 
 static void DSA_get0_pqg(const DSA *d,
                          const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
