@@ -1,5 +1,5 @@
 
-use Test::More tests => 54;
+use Test::More tests => 56;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -26,8 +26,12 @@ ok($x509->is_selfsigned(), 'is_selfsigned()');
 # Verified with the openssl binary.
 if (Crypt::OpenSSL::X509::OPENSSL_VERSION_NUMBER >= 0x10000000) {
   ok($x509->hash() eq '24ad0b63', 'hash()');
+  ok($x509->subject_hash() eq '24ad0b63', 'subject_hash()');
+  ok($x509->issuer_hash() eq '24ad0b63', 'issuer_hash()');
 } else {
   ok($x509->hash() eq '2edf7016', 'hash()');
+  ok($x509->subject_hash() eq '2edf7016', 'subject_hash()');
+  ok($x509->issuer_hash() eq '2edf7016', 'issuer_hash()');
 }
 
 ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/thawte.pem'), 'new_from_file()');

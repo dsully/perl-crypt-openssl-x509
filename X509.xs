@@ -419,12 +419,14 @@ accessor(x509)
   issuer  = 2
   serial  = 3
   hash    = 4
+  subject_hash = 4
   notBefore = 5
   notAfter  = 6
   email     = 7
   version   = 8
   sig_alg_name = 9
   key_alg_name = 10
+  issuer_hash = 11
 
   PREINIT:
   BIO *bio;
@@ -496,6 +498,8 @@ accessor(x509)
     X509_PUBKEY_get0_param(&ppkalg, NULL, NULL, NULL, pkey);
 
     i2a_ASN1_OBJECT(bio, ppkalg);
+  } else if ( ix == 11 ) {
+    BIO_printf(bio, "%08lx", X509_issuer_name_hash(x509));
   }
 
   RETVAL = sv_bio_final(bio);
