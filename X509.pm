@@ -111,9 +111,10 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
 
   print $x509->pubkey() . "\n";
   print $x509->subject() . "\n";
-  print $x509->issuer() . "\n";
-  print $x509->email() . "\n";
   print $x509->hash() . "\n";
+  print $x509->email() . "\n";
+  print $x509->issuer() . "\n";
+  print $x509->issuer_hash() . "\n";
   print $x509->notBefore() . "\n";
   print $x509->notAfter() . "\n";
   print $x509->modulus() . "\n";
@@ -195,11 +196,19 @@ Subject name as a string.
 
 Issuer name as a string.
 
+=item issuer_hash
+
+Issuer name hash as a string.
+
 =item serial
 
 Serial number as a string.
 
 =item hash
+
+Alias for subject_hash
+
+=item subject_hash
 
 Subject name hash as a string.
 
