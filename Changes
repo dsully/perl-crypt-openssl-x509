@@ -1,5 +1,25 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.8 Fri Nov 10 2017
+
+    - Patch from pi-rho exposing the Issuer's name hash; provide subject_hash() as an alias
+      to hash()
+
+    - Patch from stphnlyd X509_get0_signature() was introduced to openssl since 1.0.2.
+      See https://www.openssl.org/docs/man1.1.0/crypto/X509_get0_signature.html
+
+    - Patch from brandond fixing compilation on OpenSSL 1.0.1e
+
+    - Patch to support compilation on MacOS Homebrew installed libraries by jonasbn
+
+    - Patch from ppisar, patch redefines the accessors only with OpenSSL older than 1.1.0.
+
+    - Patch from Sebastian Andrzej Siewior fixing compilation against openssl 1.1.0 and keeping
+      it working against openssl 1.0.2j
+
+    - Patch from jonasbn reinitializing inc/ using Module::Install 1.16, fixed issue with META.yml
+      version since META.yml was not regenerated
+
 1.8.7  Thu May 12 2016
         - Patch from Bernhard M. Wiedemann to fix compilation errors.
 
