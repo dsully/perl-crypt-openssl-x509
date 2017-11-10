@@ -25,4 +25,4 @@ resources:
   homepage: https://github.com/dsully/perl-crypt-openssl-x509
   license: http://dev.perl.org/licenses/
   repository: https://github.com/dsully/perl-crypt-openssl-x509
-version: '1.807'
+version: '1.808'
