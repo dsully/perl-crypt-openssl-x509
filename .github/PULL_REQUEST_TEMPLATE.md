@@ -28,7 +28,7 @@ Please delete options that are not relevant.
 ## Test / Development Platform Information
 
 - Operating system and version
-- Crypt::OpenSSL::PKCS12 version
+- Crypt::OpenSSL::X509 version
 - Perl version
 - OpenSSL version
 
