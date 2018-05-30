@@ -1,9 +1,9 @@
-certs/thawte.pem
-certs/thawte-ec.pem
-certs/vsign1.pem
 certs/balt.pem
 certs/broken-utf8.pem
+certs/thawte-ec.pem
+certs/thawte.pem
 certs/turk.pem
+certs/vsign1.pem
 Changes
 hints/MSWin32.pl
 inc/Module/AutoInstall.pm
@@ -15,20 +15,20 @@ inc/Module/Install/Compiler.pm
 inc/Module/Install/External.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
-inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
-Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 META.yml			Module meta-data (added by MakeMaker)
+MYMETA.json
+MYMETA.yml
 README
+t/00-version.t
 t/pod.t
 t/utf8.t
-t/00-version.t
-t/x509.t
 t/x509-ec.t
+t/x509.t
 TODO
 typemap
 X509.pm
