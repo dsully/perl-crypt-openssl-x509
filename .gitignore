@@ -9,3 +9,7 @@ blib/
 pm_to_blib
 inc/
 .vstags
+*.gz
+local
+MANIFEST.bak
+MANIFEST
