@@ -1,5 +1,10 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.9 Tue May 30 2017
+
+    - Patch / PR from kmx improving detection of OpenSSL libraries under
+      strawberry Perl
+
 1.8.8 Fri Nov 10 2017
 
     - Patch from pi-rho exposing the Issuer's name hash; provide subject_hash() as an alias
