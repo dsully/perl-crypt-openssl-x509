@@ -2,7 +2,6 @@
 \B\.gitignore
 \B.vstags
 \B.github
-Makefile
 \.gz
 \.tar
 \.bak
