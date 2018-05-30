@@ -8,3 +8,4 @@ X509.bs
 blib/
 pm_to_blib
 inc/
+.vstags
