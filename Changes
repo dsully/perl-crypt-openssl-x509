@@ -1,5 +1,11 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+Sun Oct 28 20:22:59 CET 2018
+
+1.8.11 Sun Oct 28 20:22:59 CET 2018
+
+    - Re-release of 1.8.10, with corrected version number indexer error from PAUSE
+
 1.8.10 Sun Oct 28 16:52:50 CET 2018
 
     - Maintenance release, corrected issue with MYMETA.* files included in
