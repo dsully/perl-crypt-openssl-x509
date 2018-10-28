@@ -1,5 +1,12 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.10 Sun Oct 28 16:52:50 CET 2018
+
+    - Maintenance release, corrected issue with MYMETA.* files included in
+      distribution, ref:
+
+      https://weblog.bulknews.net/stop-shipping-mymeta-to-cpan-b92215a227f6
+
 1.8.9 Tue May 30 2017
 
     - Patch / PR from kmx improving detection of OpenSSL libraries under
