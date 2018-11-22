@@ -1,6 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
-Sun Oct 28 20:22:59 CET 2018
+1.8.12 Thu Nov 22 19:54:37 CET 2018
+
+    - Applied patch from @eserte addressing issue (#71) with current directory no longer included in @INC by default from Perl 5.26
+      ref: https://www.effectiveperlprogramming.com/2017/01/v5-26-removes-dot-from-inc/
 
 1.8.11 Sun Oct 28 20:22:59 CET 2018
 
