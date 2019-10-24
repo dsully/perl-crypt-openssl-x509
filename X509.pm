@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.812';
+$VERSION = '1.813';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -427,6 +427,8 @@ Dan Sully
 
 =over
 
+=item * Neil Bowers, release 1.8.13
+
 =item * kmx, release 1.8.9
 
 =item * Sebastian Andrzej Siewior
@@ -439,7 +441,7 @@ Dan Sully
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2018 by Dan Sully
+Copyright 2004-2019 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
