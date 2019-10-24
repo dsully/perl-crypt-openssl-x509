@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.8.13 
+
+    - Ensure /usr/local is ahead of /usr in include and lib searches
+
 1.8.12 Thu Nov 22 19:54:37 CET 2018
 
     - Applied patch from @eserte addressing issue (#71) with current directory no longer included in @INC by default from Perl 5.26
