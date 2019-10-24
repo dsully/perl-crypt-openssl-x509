@@ -14,8 +14,8 @@ bugtracker 'https://github.com/dsully/perl-crypt-openssl-x509/issues';
 
 requires_external_cc();
 
-inc '-I/usr/local/opt/openssl/include -I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
-libs '-L/usr/local/opt/openssl/lib -L/usr/lib -L/usr/local/lib -L/usr/local/ssl/lib -lcrypto -lssl';
+inc '-I/usr/local/opt/openssl/include -I/usr/local/include/openssl -I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
+libs '-L/usr/local/opt/openssl/lib -L/usr/local/lib -L/usr/lib -L/usr/local/ssl/lib -lcrypto -lssl';
 
 if ($Config::Config{myuname} =~ /darwin/i) {
   cc_optimize_flags('-O2 -g -Wall -Werror -Wno-deprecated-declarations');
