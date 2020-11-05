@@ -1,5 +1,13 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9 Thu Nov  5 21:38:43 CET 2020
+
+    - Bumped Perl minimum requirement from Perl 5.005 to 5.8 PR #76
+
+    - Changed from use vars definition to the more modern our PR: #75 Thanks to Todd Rinaldo
+
+    - Changed from DynaLoader to XSLoader PR: #75 Thanks to Todd Rinaldo
+
 1.8.13 Thu Oct 24 21:23:46 CEST 2019
 
     - Ensure /usr/local is ahead of /usr in include and lib searches
