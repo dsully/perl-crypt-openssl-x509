@@ -1,13 +1,13 @@
 package Crypt::OpenSSL::X509;
 
 use strict;
-use vars qw($VERSION @EXPORT_OK);
+
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.813';
+our $VERSION = '1.813';
 
-@EXPORT_OK = qw(
+our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
   FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
