@@ -1,13 +1,13 @@
 package Crypt::OpenSSL::X509;
 
 use strict;
-use vars qw($VERSION @EXPORT_OK);
+
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.813';
+our $VERSION = '1.813';
 
-@EXPORT_OK = qw(
+our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
   FORMAT_PKCS12 FORMAT_SMIME FORMAT_ENGINE FORMAT_IISSGC OPENSSL_VERSION_NUMBER
 );
@@ -82,14 +82,8 @@ sub Crypt::OpenSSL::X509::is_selfsigned {
   return $x509->subject eq $x509->issuer;
 }
 
-BOOT_XS: {
-  require DynaLoader;
-
-  # DynaLoader calls dl_load_flags as a static method.
-  *dl_load_flags = DynaLoader->can('dl_load_flags');
-
-  do {__PACKAGE__->can('bootstrap') || \&DynaLoader::bootstrap}->(__PACKAGE__, $VERSION);
-}
+use XSLoader;
+XSLoader::load 'Crypt::OpenSSL::X509', $VERSION;
 
 END {
   __PACKAGE__->__X509_cleanup;
