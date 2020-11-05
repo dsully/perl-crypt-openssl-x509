@@ -1,4 +1,5 @@
 
+use 5.008;
 use Test::More tests => 11;
 use Encode;
 

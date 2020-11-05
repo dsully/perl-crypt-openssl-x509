@@ -5,7 +5,7 @@ use Config;
 
 name('Crypt-OpenSSL-X509');
 license('perl');
-perl_version('5.005');
+perl_version('5.008');
 all_from('X509.pm');
 
 homepage 'https://github.com/dsully/perl-crypt-openssl-x509';
