@@ -5,7 +5,7 @@ use strict;
 use Exporter;
 use base qw(Exporter);
 
-our $VERSION = '1.9';
+our $VERSION = '1.900';
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
