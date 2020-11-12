@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.2 Thu Nov 12 07:27:56 CET 2020
+
+   - Addressed issue #73 via PR #73 removing and excess use of free
+
 1.9.1 Fri Nov  6 19:53:21 CET 2020
 
     - Corrected version number format to address issue #77 via PR #78
