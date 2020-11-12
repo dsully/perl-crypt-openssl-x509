@@ -1585,7 +1585,6 @@ CRL_accessor(crl)
     name = X509_CRL_get_issuer(crl);
     sv_bio_utf8_on(bio);
     X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
-    RETVAL = sv_bio_final(bio);
 
   } else if (ix == 2) {
     const_ossl11 X509_ALGOR *palg;
