@@ -5,7 +5,7 @@ use strict;
 use Exporter;
 use base qw(Exporter);
 
-our $VERSION = '1.902';
+our $VERSION = '1.903';
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -421,6 +421,8 @@ Dan Sully
 
 =over
 
+=item * Shoichi Kaji, release 1.9.3
+
 =item * Neil Bowers, release 1.8.13
 
 =item * kmx, release 1.8.9
@@ -435,7 +437,7 @@ Dan Sully
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2019 by Dan Sully
+Copyright 2004-2021 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
