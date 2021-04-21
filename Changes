@@ -1,5 +1,22 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.4 Wed Apr 21 07:45:58 CEST 2021
+
+   - Made a minor change to the Makefile.PL addressing issue with breaking builds on FreeBSD and OpenBSD
+
+     For Perl versions below or equal to 5.20, the error:
+
+     error: nonnull parameter 'pv' will evaluate to 'true' on first encounter [-Werror,-Wpointer-bool-conversion]
+     if (pv && len > 1) {
+
+    Has been observed this is now suppressed with converting the error handling into a warning
+
+    See CPAN testers reports:
+
+    - http://www.cpantesters.org/cpan/report/119b4298-9e42-11eb-84bc-edd243e66a77
+    - http://www.cpantesters.org/cpan/report/77bdcdd2-a0e7-11eb-84bc-edd243e66a77
+    - http://www.cpantesters.org/cpan/report/fd7e66b6-a14b-11eb-84bc-edd243e66a77
+
 1.9.3 Thu Apr  8 07:43:10 CEST 2021
 
    - Addressed issue #81 based on proposed patch from Shoichi Kaji
