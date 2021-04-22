@@ -26,15 +26,13 @@ if ($^O ne 'MSWin32' and my $prefix = `brew --prefix openssl 2>@{[File::Spec->de
 
 my $cc_option_flags = '-O2 -g -Wall -Werror';
 
-if ($Config::Config{perl_version} <= 20) {
-  $cc_option_flags .= ' -Wno-error=pointer-bool-conversion';
-} else {
-  $cc_option_flags .= ' -Wpointer-bool-conversion';
+if ($Config::Config{gccversion} =~ /llvm/i) {
+  if ($Config::Config{perl_version} <= 20) {
+    $cc_option_flags .= ' -Wno-error=pointer-bool-conversion';
+  }
 }
 
-if ($Config::Config{myuname} =~ /darwin/i) {
-  cc_optimize_flags($cc_option_flags);
-} elsif ($Config::Config{myuname} =~ /sunos|solaris/i) {
+if ($Config::Config{myuname} =~ /sunos|solaris/i) {
   # Any SunStudio flags?
 } else {
   cc_optimize_flags($cc_option_flags);

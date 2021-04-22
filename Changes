@@ -1,5 +1,19 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.5 Thu Apr 22 07:32:16 CEST 2021
+
+   - I broke the build for Linux
+
+     - CPAN testers reports: http://matrix.cpantesters.org/?dist=Crypt-OpenSSL-X509+1.904
+
+    The issue is that the change introduced in 1.9.4 introduces an option, which is LLVM specific
+    and is not understood by GCC.
+
+    See also issue: #84, ref: https://github.com/dsully/perl-crypt-openssl-x509/issues/84
+
+    I have rearranged the use of flags and try with a match on the GCC version string, which
+    can contain the substring LLVM
+
 1.9.4 Wed Apr 21 07:45:58 CEST 2021
 
    - Made a minor change to the Makefile.PL addressing issue with breaking builds on FreeBSD and OpenBSD
