@@ -230,7 +230,7 @@ static const char *ssl_error(void) {
   return SvPV(sv, l);
 }
 
-// Make a scalar ref to a class object
+/* Make a scalar ref to a class object */
 static SV* sv_make_ref(const char* class, void* object) {
   SV* rv;
 
@@ -625,13 +625,13 @@ bit_length(x509)
         EVP_PKEY_free(pkey);
         croak("No EC group");
       }
-      //
+      /* */
       if (!EC_GROUP_get_order(group, ec_order, NULL)) {
         EVP_PKEY_free(pkey);
         croak("Could not get ec-group order");
       }
       length = BN_num_bits(ec_order);
-      //
+      /* */
       BN_free(ec_order);
       break;
     }
@@ -657,7 +657,7 @@ curve(x509)
 
   CODE:
 #ifdef OPENSSL_NO_EC
-  if ( x509 ) {} // fix unused variable warning.
+  if ( x509 ) {} /* fix unused variable warning. */
   croak("OpenSSL without EC-support");
 #else
   pkey = X509_extract_key(x509);
@@ -986,7 +986,7 @@ extension(x509, i)
   }
 
   if (ext == NULL) {
-    // X509_EXTENSION_free(ext); // not needed?
+    /* X509_EXTENSION_free(ext); // not needed? */
     croak("Extension unavailable\n");
   }
 

@@ -1,11 +1,12 @@
 package Crypt::OpenSSL::X509;
 
+use warnings;
 use strict;
 
 use Exporter;
 use base qw(Exporter);
 
-our $VERSION = '1.905';
+our $VERSION = '1.906';
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM

@@ -1,5 +1,18 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.6 Sat Apr 24 09:17:00 CEST 2021
+
+  - I fell over the CPAN release checklist at https://github.com/Tux/Release-Checklist/blob/master/Checklist.md
+    it mentions Devel::PPPort https://metacpan.org/pod/Devel::PPPort. I have now put this to use, raised a single
+    warning
+
+    *** WARNING: Uses is_utf8_string_loclen, which may not be portable below perl 5.9.3, even with 'ppport.h'
+    *** Uses 5 C++ style comments, which is not portable
+    Analysis completed (1 warning)
+
+    And provided as single patch, which has now been applied and C++ style comments have been changed to C style
+    comments
+
 1.9.5 Thu Apr 22 07:32:16 CEST 2021
 
    - I broke the build for Linux
