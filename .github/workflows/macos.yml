@@ -1,0 +1,36 @@
+
+name: macos
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  perl:
+
+    runs-on: macOS-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Perl
+        run: |
+          brew install perl
+          curl https://cpanmin.us | perl - App::cpanminus -n
+          echo "/Users/runner/perl5/bin" >> $GITHUB_PATH
+      - name: perl -V
+        run: perl -V
+
+      - name: Run Tests
+        run: |
+          curl -sL https://cpanmin.us/ | perl - -nq --with-develop --installdeps -v .
+          perl Makefile.PL
+          make
+          make test
