@@ -1,5 +1,10 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.7 Sun May  2 19:36:24 CEST 2021
+
+  - Addressed minor issue with META.yml file not reporting correct version, see issue #86
+    REF: https://github.com/dsully/perl-crypt-openssl-x509/issues/86
+
 1.9.6 Sat Apr 24 09:17:00 CEST 2021
 
   - I fell over the CPAN release checklist at https://github.com/Tux/Release-Checklist/blob/master/Checklist.md
