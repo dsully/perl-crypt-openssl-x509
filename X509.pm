@@ -94,6 +94,8 @@ END {
 
 __END__
 
+=pod
+
 =head1 NAME
 
 Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.

@@ -1,5 +1,6 @@
 use lib '.';
 use inc::Module::Install;
+use Module::Install::AutoInstall;
 
 use File::Spec;
 use Config;
@@ -39,4 +40,4 @@ if ($Config::Config{myuname} =~ /sunos|solaris/i) {
 }
 
 auto_install();
-WriteAll();
+WriteAll;
