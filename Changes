@@ -1,5 +1,9 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+1.9.8 Thu May 13 18:04:17 CEST 2021
+
+  - Addressed minor issue, via PR #87, with the implementation added in 1.9.3 - Thanks Shoichi Kaji
+
 1.9.7 Sun May  2 19:36:24 CEST 2021
 
   - Addressed minor issue with META.yml file not reporting correct version, see issue #86

@@ -6,7 +6,7 @@ use strict;
 use Exporter;
 use base qw(Exporter);
 
-our $VERSION = '1.907';
+our $VERSION = '1.908';
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -424,7 +424,7 @@ Dan Sully
 
 =over
 
-=item * Shoichi Kaji, release 1.9.3
+=item * Shoichi Kaji, release 1.9.3 and 1.9.8
 
 =item * Neil Bowers, release 1.8.13
 
