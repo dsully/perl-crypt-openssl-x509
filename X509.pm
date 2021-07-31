@@ -424,7 +424,7 @@ Dan Sully
 
 =over
 
-=item * Patrick Cernko, release 1.10.0
+=item * Patrick Cernko, release 1.9.9
 
 =item * Shoichi Kaji, release 1.9.3 and 1.9.8
 
