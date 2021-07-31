@@ -1,6 +1,6 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
-1.10.0 Sat Jul 31 17:58:56 CEST 2021
+1.9.9 Sat Jul 31 17:58:56 CEST 2021
 
   - Contribution by Patrick Cernko. The email method has been extended to return multiple email addresses if available.
     The addresses are concatenated using space (' ') as seperator in order for consumers to extract the multiple email addresses
