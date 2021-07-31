@@ -473,7 +473,7 @@ accessor(x509)
     STACK_OF(OPENSSL_STRING) *emlst = X509_get1_email(x509);
 
     for (j = 0; j < sk_OPENSSL_STRING_num(emlst); j++) {
-      BIO_printf(bio, "%s", sk_OPENSSL_STRING_value(emlst, j));
+      BIO_printf(bio, "%s%s", (j ? " " : ""), sk_OPENSSL_STRING_value(emlst, j));
     }
 
     X509_email_free(emlst);

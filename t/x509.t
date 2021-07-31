@@ -1,5 +1,5 @@
 
-use Test::More tests => 56;
+use Test::More tests => 58;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -98,3 +98,7 @@ ok(not($x509->subject_name()->get_entry_by_type("ST")->is_asn1_type(Crypt::OpenS
   ok($x509);
   ok($x509->serial() eq '020000B9', 'serial()');
 }
+
+ok($x509 = Crypt::OpenSSL::X509->new_from_file('certs/smime.pem'), 'new_from_file()');
+
+ok($x509->email() eq 'altuser@mpi-sws.org user@mpi-sws.org user@mpi-sws.de', 'email()');

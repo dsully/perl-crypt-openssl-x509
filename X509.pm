@@ -219,7 +219,7 @@ C<notAfter> time as a string.
 
 =item email
 
-Email address as a string.
+Email addresses as string, if multiple addresses found, they are seperated by a space (' ').
 
 =item version
 
