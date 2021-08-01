@@ -424,6 +424,8 @@ Dan Sully
 
 =over
 
+=item * Timonthy Legge, release 1.9.10
+
 =item * Patrick Cernko, release 1.9.9
 
 =item * Shoichi Kaji, release 1.9.3 and 1.9.8
