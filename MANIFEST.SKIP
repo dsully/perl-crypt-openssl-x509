@@ -14,3 +14,4 @@ X509.o
 pm_to_blib
 MYMETA.*
 prototypes
+.gitattributes
