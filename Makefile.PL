@@ -30,7 +30,7 @@ my $cc_option_flags = '-O2 -g -Wall -Werror';
 if ($Config::Config{gccversion} =~ /llvm/i) {
   $cc_option_flags .= ' -Wno-deprecated-declarations'; # -Wno-compound-token-split-by-macro
 
-  if ($Config::Config{gccversion} =~ /llvm 12/i) {
+  if ($Config::Config{gccversion} =~ /llvm 13/i) {
       $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
   }
 

@@ -12,7 +12,7 @@ on:
       - '*'
 jobs:
   perl:
-
+    # REF: https://github.com/actions/virtual-environments
     runs-on: macOS-latest
 
     strategy:
@@ -21,6 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # REF: https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md (see link above, at the time of writing we get Perl 5.34.0 with macOS 10.15)
       - name: Set up Perl
         run: |
           brew install perl
