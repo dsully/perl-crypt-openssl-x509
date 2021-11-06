@@ -4,9 +4,9 @@ Revision history for Perl extension Crypt::OpenSSL::X509.
 
 - Correction to spelling found Debian Linter, thanks @fschlich
 
-- Added eliminated compound-token-split-by-macro errors coming from newer clang (> 11), got some good pointers from this issue: https://github.com/Perl/perl5/issues/18780
+- Added eliminated compound-token-split-by-macro errors coming from newer clang/LLVM version (>11?), got some good pointers from this Perl issue https://github.com/Perl/perl5/issues/18780
 
-- Forced OpenSSL under Homebrew to 1.1 via openssl\@1.1, since version 3 got released we might experience issues and this need to be revisited and tested thoroughly
+- Forced OpenSSL under Homebrew to 1.1 via openssl\@1.1, since OpenSSL version 3 got released we might experience issues and this need to be revisited and tested thoroughly
 
 - Reformatted the Changes file, slowly converting to Markdown
 
