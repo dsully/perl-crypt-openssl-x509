@@ -28,7 +28,12 @@ if ($^O ne 'MSWin32' and my $prefix = `brew --prefix --installed openssl\@1.1 2>
 my $cc_option_flags = '-O2 -g -Wall -Werror';
 
 if ($Config::Config{gccversion} =~ /llvm/i) {
-  $cc_option_flags .= ' -Wno-compound-token-split-by-macro -Wno-deprecated-declarations';
+  $cc_option_flags .= ' -Wno-deprecated-declarations'; # -Wno-compound-token-split-by-macro
+
+  if ($Config::Config{gccversion} =~ /llvm 12/i) {
+      $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
+  }
+
   if ($Config::Config{perl_version} <= 20) {
     $cc_option_flags .= ' -Wno-error=pointer-bool-conversion';
   }
