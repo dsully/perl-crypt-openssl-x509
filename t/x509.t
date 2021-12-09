@@ -1,5 +1,5 @@
 
-use Test::More tests => 58;
+use Test::More tests => 59;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -55,6 +55,7 @@ is($$exts{"2.5.29.19"}->object()->name(),"X509v3 Basic Constraints", "Extension-
 
 ok($$exts{"2.5.29.19"}->is_critical(), "basic constraints is critical");
 ok($$exts{"2.5.29.19"}->basicC("ca"), 'basicConstraints CA: TRUE 2.4.1');
+ok($$exts{"2.5.29.19"}->as_string() eq $$exts{"2.5.29.19"}->to_string(), 'as_string is an alias of to_string');
 
 ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
 ok(my $exts_b = $x509_b->extensions_by_name(), "extensions_by_name()");
