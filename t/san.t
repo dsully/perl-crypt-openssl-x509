@@ -12,9 +12,9 @@ foreach my $file (@files) {
   ok(my $x509 = Crypt::OpenSSL::X509->new_from_file($file), 'new_from_file()');
   my $san = $x509->subjectaltname;
 
-  ok ($san, "subjectaltname call succeeded");
+  ok ($san, 'subjectaltname call succeeded');
 
-  # Mostly for debugging but this could be commeted out
+  # Mostly for debugging but this could be commented out
   foreach my $sanname (@$san) {
     for (keys %$sanname){
       print("    Found $_: ", $sanname->{$_}, "\n");

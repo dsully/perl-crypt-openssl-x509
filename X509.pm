@@ -97,7 +97,7 @@ sub Crypt::OpenSSL::X509::subjectaltname {
 
   # Determine whether the SubjectAltName exist
   if (! defined ${$ext}{'2.5.29.17'}) {
-    # Simply return an empty array if it does not exist
+    # Simply return a reference to an empty array if it does not exist
     my @tmp = ();
     return \@tmp;
   }
@@ -168,16 +168,16 @@ sub Crypt::OpenSSL::X509::subjectaltname {
     }
 
   >);
-  die "*** Could not prepare definition: ".$asn->error()
+  die '*** Could not prepare definition: '.$asn->error()
       if !$ok;
 
   # This is an important bit - if you don't do the find the decode
   # will randomly fail/succeed.  This is required to work
-  my $asn_node = $asn->find("SubjectAltName")
+  my $asn_node = $asn->find('SubjectAltName')
       or die $asn->error;
 
   my $san = $asn_node->decode($bin_data)
-      or die "can't decode SubjectAltName: ".$asn_node->error;
+      or die 'Unable to decode SubjectAltName: '.$asn_node->error;
 
   return $san;
 }
