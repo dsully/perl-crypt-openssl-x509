@@ -88,6 +88,7 @@ sub Crypt::OpenSSL::X509::is_selfsigned {
 sub Crypt::OpenSSL::X509::subjectaltname {
   my $x509 = shift;
 
+  my $SUBJECT_ALT_NAME_OID = '2.5.29.17';
   my $ext;
   eval {
     # extensions_by_oid croaks of no extensions found
@@ -96,13 +97,13 @@ sub Crypt::OpenSSL::X509::subjectaltname {
   };
 
   # Determine whether the SubjectAltName exist
-  if (! defined ${$ext}{'2.5.29.17'}) {
+  if (! defined ${$ext}{$SUBJECT_ALT_NAME_OID}) {
     # Simply return a reference to an empty array if it does not exist
     my @tmp = ();
     return \@tmp;
   }
 
-  my $pdu = ${$ext}{'2.5.29.17'}->value();
+  my $pdu = ${$ext}{$SUBJECT_ALT_NAME_OID}->value();
 
   # remove leading '#' from the value returned
   $pdu =~ s/^#//g;
