@@ -1067,11 +1067,14 @@ value(ext)
 SV*
 to_string(ext)
   Crypt::OpenSSL::X509::Extension ext;
+  ALIAS:
+  as_string = 1
 
   PREINIT:
   BIO* bio;
-
+  
   CODE:
+  (void)ix;
   bio = sv_bio_create();
 
   if (ext == NULL) {

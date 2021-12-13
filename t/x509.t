@@ -1,5 +1,5 @@
 
-use Test::More tests => 58;
+use Test::More tests => 59;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -49,45 +49,46 @@ ok($x509->num_extensions() eq '1', 'num_extensions()');
 
 ok($exts = $x509->extensions_by_oid(), 'extension_by_oid()');
 
-ok($x509->has_extension_oid("2.5.29.19"), 'has_extension_oid(2.5.29.19)');
+ok($x509->has_extension_oid('2.5.29.19'), 'has_extension_oid(2.5.29.19)');
 
-is($$exts{"2.5.29.19"}->object()->name(),"X509v3 Basic Constraints", "Extension->object()->name()");
+is($$exts{'2.5.29.19'}->object()->name(),'X509v3 Basic Constraints', 'Extension->object()->name()');
 
-ok($$exts{"2.5.29.19"}->is_critical(), "basic constraints is critical");
-ok($$exts{"2.5.29.19"}->basicC("ca"), 'basicConstraints CA: TRUE 2.4.1');
+ok($$exts{'2.5.29.19'}->is_critical(), 'basic constraints is critical');
+ok($$exts{'2.5.29.19'}->basicC('ca'), 'basicConstraints CA: TRUE 2.4.1');
+ok($$exts{'2.5.29.19'}->as_string() eq $$exts{'2.5.29.19'}->to_string(), 'as_string is an alias of to_string');
 
 ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
-ok(my $exts_b = $x509_b->extensions_by_name(), "extensions_by_name()");
-ok(not($$exts_b{'subjectKeyIdentifier'}->is_critical()), "subjectKeyIdentifier not critical");
-my $subkeyid = (join ":", map{sprintf "%X", ord($_)} split //, $$exts_b{'subjectKeyIdentifier'}->keyid_data());
-ok($subkeyid eq "E5:9D:59:30:82:47:58:CC:AC:FA:8:54:36:86:7B:3A:B5:4:4D:F0", "Extension{subjectKeyID}->keyid_data()");
+ok(my $exts_b = $x509_b->extensions_by_name(), 'extensions_by_name()');
+ok(not($$exts_b{'subjectKeyIdentifier'}->is_critical()), 'subjectKeyIdentifier not critical');
+my $subkeyid = (join ':', map{sprintf '%X', ord($_)} split //, $$exts_b{'subjectKeyIdentifier'}->keyid_data());
+ok($subkeyid eq 'E5:9D:59:30:82:47:58:CC:AC:FA:8:54:36:86:7B:3A:B5:4:4D:F0', 'Extension{subjectKeyID}->keyid_data()');
 
-ok($$exts_b{'keyUsage'}->is_critical(), "keyUsage is critical");
+ok($$exts_b{'keyUsage'}->is_critical(), 'keyUsage is critical');
 my %key_hash = $$exts_b{'keyUsage'}->hash_bit_string();
-ok($key_hash{'Certificate Sign'}, "Extension->hash_bit_string()");
+ok($key_hash{'Certificate Sign'}, 'Extension->hash_bit_string()');
 
-isa_ok($x509->subject_name(), "Crypt::OpenSSL::X509::Name", 'subject_name()');
-isa_ok($x509->issuer_name(), "Crypt::OpenSSL::X509::Name", 'issuer_name()');
+isa_ok($x509->subject_name(), 'Crypt::OpenSSL::X509::Name', 'subject_name()');
+isa_ok($x509->issuer_name(), 'Crypt::OpenSSL::X509::Name', 'issuer_name()');
 is($x509->subject_name()->as_string(), 'C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA, emailAddress=server-certs@thawte.com', 'subject_name()->as_string()');
 is($x509->issuer_name()->as_string(), 'C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA, emailAddress=server-certs@thawte.com', 'issuer_name()->as_string()');
 
 ok(my $subject_name_entries = $x509->subject_name()->entries(), 'subject_name()->entries()');
-is(@$subject_name_entries[0]->as_string(),"C=ZA",'Name_Entry->as_string()');
-is(@$subject_name_entries[2]->as_long_string(),"localityName=Cape Town",'Name_Entry->as_long_string()');
-is(@$subject_name_entries[1]->type(),"ST",'Name_Entry->type');
-is(@$subject_name_entries[1]->long_type(),"stateOrProvinceName",'Name_Entry->long_type');
-is(@$subject_name_entries[1]->value(),"Western Cape",'Name_Entry->value');
+is(@$subject_name_entries[0]->as_string(),'C=ZA','Name_Entry->as_string()');
+is(@$subject_name_entries[2]->as_long_string(),'localityName=Cape Town','Name_Entry->as_long_string()');
+is(@$subject_name_entries[1]->type(),'ST','Name_Entry->type');
+is(@$subject_name_entries[1]->long_type(),'stateOrProvinceName','Name_Entry->long_type');
+is(@$subject_name_entries[1]->value(),'Western Cape','Name_Entry->value');
 
-ok($x509->subject_name()->has_entry("ST"),'Name->has_entry');
-ok($x509->subject_name()->has_long_entry("stateOrProvinceName"),'Name->has_entry');
-ok($x509->subject_name()->has_oid_entry("2.5.4.3"),'Name->has_oid_entry([CN])');
-ok(not($x509->subject_name()->has_oid_entry("0.9.2342.19200300.100.1.25")),'not Name->has_oid_entry([DC])');
-is($x509->subject_name()->get_index_by_type("ST"),1,'Name->get_index_by_type');
-is($x509->subject_name()->get_index_by_long_type("localityName"),2,'Name->get_index_by_long_type');
+ok($x509->subject_name()->has_entry('ST'),'Name->has_entry');
+ok($x509->subject_name()->has_long_entry('stateOrProvinceName'),'Name->has_entry');
+ok($x509->subject_name()->has_oid_entry('2.5.4.3'),'Name->has_oid_entry([CN])');
+ok(not($x509->subject_name()->has_oid_entry('0.9.2342.19200300.100.1.25')),'not Name->has_oid_entry([DC])');
+is($x509->subject_name()->get_index_by_type('ST'),1,'Name->get_index_by_type');
+is($x509->subject_name()->get_index_by_long_type('localityName'),2,'Name->get_index_by_long_type');
 
-isa_ok($x509->subject_name()->get_entry_by_type("ST"),"Crypt::OpenSSL::X509::Name_Entry",'Name->get_entry_by_type');
-ok($x509->subject_name()->get_entry_by_type("ST")->is_printableString(),'Name_Entry->is_printableString');
-ok(not($x509->subject_name()->get_entry_by_type("ST")->is_asn1_type(Crypt::OpenSSL::X509::V_ASN1_UTF8STRING)),'Name_Entry->is_asn1_type');
+isa_ok($x509->subject_name()->get_entry_by_type('ST'),'Crypt::OpenSSL::X509::Name_Entry','Name->get_entry_by_type');
+ok($x509->subject_name()->get_entry_by_type('ST')->is_printableString(),'Name_Entry->is_printableString');
+ok(not($x509->subject_name()->get_entry_by_type('ST')->is_asn1_type(Crypt::OpenSSL::X509::V_ASN1_UTF8STRING)),'Name_Entry->is_asn1_type');
 
 # Check new_from_string / as_string round trip.
 {
