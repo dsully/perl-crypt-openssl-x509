@@ -1,6 +1,12 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
-1.9.11 Sat Nov  6 19:46:09 CET 2021
+1.9.12
+
+- Applied patch from @jrouzierinverse PR [#93](https://github.com/dsully/perl-crypt-openssl-x509/issues/93)
+
+- Applied patch from @timlegge PR [#92](https://github.com/dsully/perl-crypt-openssl-x509/issues/92)
+
+1.9.11 Mon Dec 13 19:53:39 CET 2021
 
 - Correction to spelling found Debian Linter, thanks @fschlich
 
