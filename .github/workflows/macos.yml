@@ -13,7 +13,7 @@ on:
 jobs:
   perl:
     # REF: https://github.com/actions/virtual-environments
-    runs-on: macOS-latest
+    runs-on: macOS-10.15
 
     strategy:
       fail-fast: false
