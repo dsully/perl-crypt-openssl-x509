@@ -6,6 +6,8 @@ use strict;
 use Exporter;
 use base qw(Exporter);
 
+use Convert::ASN1;
+
 our $VERSION = '1.911';
 
 our @EXPORT_OK = qw(
@@ -81,6 +83,104 @@ sub Crypt::OpenSSL::X509::is_selfsigned {
   my $x509 = shift;
 
   return $x509->subject eq $x509->issuer;
+}
+
+sub Crypt::OpenSSL::X509::subjectaltname {
+  my $x509 = shift;
+
+  my $SUBJECT_ALT_NAME_OID = '2.5.29.17';
+  my $ext;
+  eval {
+    # extensions_by_oid croaks of no extensions found
+    # we don't care we will return an empty array
+    $ext = $x509->extensions_by_oid();
+  };
+
+  # Determine whether the SubjectAltName exist
+  if (! defined ${$ext}{$SUBJECT_ALT_NAME_OID}) {
+    # Simply return a reference to an empty array if it does not exist
+    my @tmp = ();
+    return \@tmp;
+  }
+
+  my $pdu = ${$ext}{$SUBJECT_ALT_NAME_OID}->value();
+
+  # remove leading '#' from the value returned
+  $pdu =~ s/^#//g;
+
+  my $bin_data = join '', pack 'H*', $pdu;
+  my $asn = Convert::ASN1->new();
+
+  my $ok = $asn->prepare(q<
+    AnotherName ::= SEQUENCE {
+      type    OBJECT IDENTIFIER,
+      value      [0] EXPLICIT ANY } --DEFINED BY type-id }
+
+    EDIPartyName ::= SEQUENCE {
+      nameAssigner            [0]     DirectoryString OPTIONAL,
+      partyName               [1]     DirectoryString }
+
+   --  Directory string type --
+
+    DirectoryString ::= CHOICE {
+      teletexString		TeletexString,  --(SIZE (1..MAX)),
+      printableString		PrintableString,  --(SIZE (1..MAX)),
+      bmpString		BMPString,  --(SIZE (1..MAX)),
+      universalString		UniversalString,  --(SIZE (1..MAX)),
+      utf8String		UTF8String,  --(SIZE (1..MAX)),
+      ia5String		IA5String  --added for EmailAddress
+	}
+
+    AttributeType ::= OBJECT IDENTIFIER
+
+    AttributeValue ::= DirectoryString  --ANY
+
+    AttributeTypeAndValue ::= SEQUENCE {
+      type			AttributeType,
+      value			AttributeValue
+	}
+
+    -- naming data types --
+
+    Name ::= CHOICE { -- only one possibility for now
+      rdnSequence		RDNSequence
+	}
+
+    RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+
+    DistinguishedName ::= RDNSequence
+
+    RelativeDistinguishedName ::=
+	SET OF AttributeTypeAndValue  --SET SIZE (1 .. MAX) OF
+
+    SubjectAltName ::= GeneralNames
+
+    GeneralNames ::= SEQUENCE OF GeneralName
+
+    GeneralName ::= CHOICE {
+      rfc822Name                      [1]     IA5String,
+      dNSName                         [2]     IA5String,
+      x400Address                     [3]     ANY, --ORAddress,
+      directoryName                   [4]     Name,
+      ediPartyName                    [5]     EDIPartyName,
+      uniformResourceIdentifier       [6]     IA5String,
+      iPAddress                       [7]     OCTET STRING,
+      registeredID                    [8]     OBJECT IDENTIFIER
+    }
+
+  >);
+  die '*** Could not prepare definition: '.$asn->error()
+      if !$ok;
+
+  # This is an important bit - if you don't do the find the decode
+  # will randomly fail/succeed.  This is required to work
+  my $asn_node = $asn->find('SubjectAltName')
+      or die $asn->error;
+
+  my $san = $asn_node->decode($bin_data)
+      or die 'Unable to decode SubjectAltName: '.$asn_node->error;
+
+  return $san;
 }
 
 use XSLoader;

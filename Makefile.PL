@@ -45,5 +45,7 @@ if ($Config::Config{myuname} =~ /sunos|solaris/i) {
   cc_optimize_flags($cc_option_flags);
 }
 
+requires 'Convert::ASN1' => '0.33';
+
 auto_install();
 WriteAll;
