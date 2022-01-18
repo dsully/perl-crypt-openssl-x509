@@ -1,14 +1,12 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
-## 1.10.0
+## 1.9.11 Tue Jan 18 18:57:39 CET 2022
 
-- Applied patch from @jrouzierinverse PR [#93](https://github.com/dsully/perl-crypt-openssl-x509/pull/93)
+- Applied patch from @jrouzierinverse PR [#93](https://github.com/dsully/perl-crypt-openssl-x509/pull/93) addressing issue [#66](https://github.com/dsully/perl-crypt-openssl-x509/issues/66)
 
-- Applied patch from @timlegge PR [#92](https://github.com/dsully/perl-crypt-openssl-x509/pull/92)
+- Applied patch from @timlegge PR [#92](https://github.com/dsully/perl-crypt-openssl-x509/pull/92) addressing issues [#50](https://github.com/dsully/perl-crypt-openssl-x509/issues/50) and [#40](https://github.com/dsully/perl-crypt-openssl-x509/issues/40)
 
-## 1.9.11 Mon Dec 13 19:53:39 CET 2021
-
-- Correction to spelling found Debian Linter, thanks @fschlich
+- Correction to spelling found Debian Linter, thanks @fschlich PR [#90](https://github.com/dsully/perl-crypt-openssl-x509/pull/90)
 
 - Added eliminated compound-token-split-by-macro errors coming from newer clang/LLVM version (>11?), got some good pointers from this [Perl issue](https://github.com/Perl/perl5/issues/18780)
 
