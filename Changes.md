@@ -1,5 +1,11 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 1.9.12 Wed Jan 19 07:46:10 CET 2022
+
+- Repair upload, see release 1.9.11
+
+> PAUSE doesn't let you upload a file twice.
+
 ## 1.9.11 Tue Jan 18 18:57:39 CET 2022
 
 - Applied patch from @jrouzierinverse PR [#93](https://github.com/dsully/perl-crypt-openssl-x509/pull/93) addressing issue [#66](https://github.com/dsully/perl-crypt-openssl-x509/issues/66)
