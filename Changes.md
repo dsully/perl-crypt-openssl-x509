@@ -2,7 +2,7 @@
 
 ## 1.9.12 Wed Jan 19 07:46:10 CET 2022
 
-- Repair upload, see release 1.9.11
+- Repair upload, see release 1.9.11, thank you @timlegge for reporting this
 
 > PAUSE doesn't let you upload a file twice.
 
