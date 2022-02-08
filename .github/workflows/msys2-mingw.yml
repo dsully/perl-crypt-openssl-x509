@@ -47,5 +47,6 @@ jobs:
       - name: Run Tests
         run: |
           curl -Uri https://cpanmin.us/ | perl - -nq --with-develop --installdeps -v .
+          perl Makefile.PL
           make
           make test
