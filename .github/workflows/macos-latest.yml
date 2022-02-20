@@ -1,0 +1,34 @@
+
+name: macos-latest
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  perl:
+
+    runs-on: macOS-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: uses install-with-cpanm
+        uses: perl-actions/install-with-cpanm@v1
+        with:
+          cpanfile: "cpanfile"
+          sudo: false
+      - name: perl -V
+        run: perl -V
+
+      - name: Run Tests
+        run: |
+          perl Makefile.PL
+          make
+          make test
