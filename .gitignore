@@ -12,3 +12,4 @@ pm_to_blib
 local
 MANIFEST.bak
 MANIFEST
+/Crypt-OpenSSL-X509-*
