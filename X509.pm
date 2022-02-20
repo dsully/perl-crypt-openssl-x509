@@ -526,7 +526,7 @@ Dan Sully
 
 =item * Florian Schlichting @fschlich, release 1.9.11
 
-=item * Timonthy Legge, release 1.9.10
+=item * Timothy Legge, release 1.9.10
 
 =item * Patrick Cernko, release 1.9.9
 
