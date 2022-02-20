@@ -278,7 +278,7 @@ Dan Sully
 # CONTRIBUTORS
 
 - Florian Schlichting @fschlich, release 1.9.11
-- Timonthy Legge, release 1.9.10
+- Timothy Legge, release 1.9.10
 - Patrick Cernko, release 1.9.9
 - Shoichi Kaji, release 1.9.3 and 1.9.8
 - Neil Bowers, release 1.8.13
