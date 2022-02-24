@@ -3,7 +3,7 @@ use File::Spec;
 
 my %args;
 
-if ($^O ne 'MSWin32' and my $prefix = `brew --prefix --installed openssl\@1.1 2>@{[File::Spec->devnull]}`) {
+if ($^O ne 'MSWin32' and my $prefix = `brew --prefix --installed openssl 2>@{[File::Spec->devnull]}`) {
   chomp $prefix;
   $args{INC} = "-I$prefix/include";
   $args{LIBS} = ["-L$prefix/lib -lcrypto -lssl"];
