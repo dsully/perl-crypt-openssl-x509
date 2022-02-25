@@ -1,10 +1,14 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
-## 1.9.13-TRIAL Sun Feb 20 21:31:44 CET 2022
+## 1.9.13 Sat Feb 26 00:36:28 CET 2022
 
 - The distribution has changed distribution toolchain from Module::Install to Dist::Zilla, thanks to @skaji for PR [#96](https://github.com/dsully/perl-crypt-openssl-x509/pull/96) and thanks to @timlegge for the review of the proposed changes
 
 - The macOS CI jobs have been improved with PRs [#98](https://github.com/dsully/perl-crypt-openssl-x509/pull/98) and [#99](https://github.com/dsully/perl-crypt-openssl-x509/pull/99) from @timlegge
+
+## 1.9.13-TRIAL Sun Feb 20 21:31:44 CET 2022
+
+- Release leading up to 1.9.13, see that release for details
 
 - This is a TRIAL release, in order to get some feedback from CPAN-testers prior to making a proper public release, since the changes to the build system has been quite significant. Additional trial releases might follow, based on findings and feedback
 
