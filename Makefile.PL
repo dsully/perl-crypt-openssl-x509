@@ -31,7 +31,12 @@ if ($^O eq 'MSWin32') {
   }
 }
 
-my $cc_option_flags = '-O2 -g -Wall -Werror';
+#my $api_ver = '0x00908000L';  # (version 0.9.8)
+my $api_ver = '0x10000000L';  # (version 1.0.0)
+#my $api_ver = '0x10100000L';  # (version 1.1.0)
+
+#my $cc_option_flags = "-DOPENSSL_API_COMPAT=$api_ver -O2 -g -Wall -Werror";
+my $cc_option_flags = "-DOPENSSL_NO_DEPRECATED_0_9_8 -O2 -g -Wall -Werror";
 
 if ($Config{gccversion} =~ /llvm/i) {
   if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.5/) {
