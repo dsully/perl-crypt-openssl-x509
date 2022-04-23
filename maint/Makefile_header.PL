@@ -25,7 +25,7 @@ if ($^O eq 'MSWin32') {
 my $cc_option_flags = '-O2 -g -Wall -Werror';
 
 if ($Config{gccversion} =~ /llvm/i) {
-  if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.5/) {
+  if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.[0-5]/) {
     $cc_option_flags .= ' -Wno-deprecated-declarations -Wno-compound-token-split-by-macro';
   } else {
     $cc_option_flags .= ' -Wno-deprecated-declarations';
