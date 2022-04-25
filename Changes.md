@@ -1,5 +1,11 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 1.9.14-TRIAL Mon Apr 25 20:18:25 CEST 2022
+
+- Applied patch from @ikedas PR [#105](https://github.com/dsully/perl-crypt-openssl-x509/pull/105) make the pattern match for LLVM version number in the 12 series a bit more liberal
+
+- Applied patch from @timlegge PR [#102](https://github.com/dsully/perl-crypt-openssl-x509/pull/102) adressing issues: [#45](https://github.com/dsully/perl-crypt-openssl-x509/issues/45) and [#95](https://github.com/dsully/perl-crypt-openssl-x509/issues/95) with only a more strict use of compiler flags if environment variable `AUTHOR_TESTING` is set to true
+
 ## 1.9.13 Sat Feb 26 00:36:28 CET 2022
 
 - The distribution has changed distribution toolchain from Module::Install to Dist::Zilla, thanks to @skaji for PR [#96](https://github.com/dsully/perl-crypt-openssl-x509/pull/96) and thanks to @timlegge for the review of the proposed changes
