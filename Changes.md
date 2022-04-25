@@ -6,6 +6,8 @@
 
 - Applied patch from @timlegge PR [#102](https://github.com/dsully/perl-crypt-openssl-x509/pull/102) adressing issues: [#45](https://github.com/dsully/perl-crypt-openssl-x509/issues/45) and [#95](https://github.com/dsully/perl-crypt-openssl-x509/issues/95) with only a more strict use of compiler flags if environment variable `AUTHOR_TESTING` is set to true
 
+- Added enhancement from @michal-josef-spacek introducing use of [Crypt::OpenSSL::Guess](https://metacpan.org/pod/Crypt::OpenSSL::Guess), which can be used to determine placement of OpenSSL libraries. The idea originates from issue [#97](https://github.com/dsully/perl-crypt-openssl-x509/issues/97) raised by @ikedas
+
 ## 1.9.13 Sat Feb 26 00:36:28 CET 2022
 
 - The distribution has changed distribution toolchain from Module::Install to Dist::Zilla, thanks to @skaji for PR [#96](https://github.com/dsully/perl-crypt-openssl-x509/pull/96) and thanks to @timlegge for the review of the proposed changes
