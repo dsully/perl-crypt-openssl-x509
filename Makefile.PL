@@ -33,15 +33,21 @@ if ($^O eq 'MSWin32') {
 
 my $cc_option_flags = '-O2 -g -Wall -Werror';
 
+# Example from macOS (see prototypes/config.pl)
+# gccversion = Apple LLVM 13.0.0 (clang-1300.0.29.30)
 if ($Config{gccversion} =~ /llvm/i) {
-  if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.5/) {
-    $cc_option_flags .= ' -Wno-deprecated-declarations -Wno-compound-token-split-by-macro';
-  } else {
-    $cc_option_flags .= ' -Wno-deprecated-declarations';
+  $cc_option_flags .= ' -Wno-deprecated-declarations';
+
+  if ($Config{gccversion} =~ /llvm 12/i) {
+    $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
   }
 
   if ($Config{gccversion} =~ /llvm 13/i) {
-      $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
+    $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
+  }
+
+  if ($Config{gccversion} =~ /llvm 14/i) {
+    $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
   }
 
   if ($Config{perl_version} <= 20) {
