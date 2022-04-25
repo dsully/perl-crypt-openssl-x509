@@ -22,7 +22,13 @@ if ($^O eq 'MSWin32') {
   }
 }
 
-my $cc_option_flags = '-O2 -g -Wall -Werror';
+my $cc_option_flags = '-O2 -g';
+
+if ($Config::Config{cc} =~ /gcc/i) {
+  $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Werror' : ' -Wall';
+} else {
+  $cc_option_flags .= '';
+}
 
 if ($Config{gccversion} =~ /llvm/i) {
   if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.[0-5]/) {
@@ -41,7 +47,7 @@ if ($Config{gccversion} =~ /llvm/i) {
 }
 
 if ($Config{myuname} =~ /sunos|solaris/i) {
-  # Any SunStudio flags?
+  $args{OPTIMIZE} = $cc_option_flags;
 } else {
   $args{OPTIMIZE} = $cc_option_flags;
 }
