@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          curl -sL https://cpanmin.us/ | perl - -nq --with-develop --installdeps -v .
+          curl -sL https://cpanmin.us/ | perl - -nq --with-configure --with-develop --installdeps -v .
           perl Makefile.PL
           gmake
           gmake test
