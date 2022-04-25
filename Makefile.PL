@@ -8,28 +8,12 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 use Config;
-use File::Spec;
+use Crypt::OpenSSL::Guess qw(openssl_lib_paths openssl_inc_paths);
 
-my %args;
-
-if ($^O ne 'MSWin32' and my $prefix = `brew --prefix --installed openssl\@1.1 2>@{[File::Spec->devnull]}`) {
-  chomp $prefix;
-  $args{INC} = "-I$prefix/include";
-  $args{LIBS} = ["-L$prefix/lib -lcrypto -lssl"];
-} else {
-  $args{INC} = '-I/usr/local/opt/openssl/include -I/usr/local/include/openssl -I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
-  $args{LIBS} = ['-L/usr/local/opt/openssl/lib -L/usr/local/lib -L/usr/lib -L/usr/local/ssl/lib -lcrypto -lssl'];
-}
-
-if ($^O eq 'MSWin32') {
-  if (my $libs = `pkg-config --libs libcrypto 2>nul`) {
-    # strawberry perl has pkg-config
-    $args{LIBS} = [ $libs ];
-  } else {
-    $args{LIBS} = ['-llibeay32'] if $Config{cc} =~ /cl/; # msvc with ActivePerl
-    $args{LIBS} = ['-leay32']    if $Config{gccversion}; # gcc
-  }
-}
+my %args = (
+  LIBS => [openssl_lib_paths().' -lssl -lcrypto'],
+  INC => openssl_inc_paths(),
+);
 
 my $cc_option_flags = '-O2 -g -Wall -Werror';
 
@@ -59,6 +43,8 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "Perl extension to OpenSSL's X509 API.",
   "AUTHOR" => "Dan Sully",
   "CONFIGURE_REQUIRES" => {
+    "Config" => 0,
+    "Crypt::OpenSSL::Guess" => 0,
     "ExtUtils::MakeMaker" => 0
   },
   "DISTNAME" => "Crypt-OpenSSL-X509",
