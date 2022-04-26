@@ -10,7 +10,7 @@ my %args = (
 #my $api_ver = '0x10000000L';  # (version 1.0.0)
 my $api_ver = '0x10100000L';  # (version 1.1.0)
 
-my $cc_option_flags = ' -DOPENSSL_API_COMPAT=$api_ver -O2 -g';
+my $cc_option_flags = " -DOPENSSL_API_COMPAT=$api_ver -O2 -g";
 
 if ($Config::Config{cc} =~ /gcc/i) {
   $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Werror' : ' -Wall';
