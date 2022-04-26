@@ -267,25 +267,63 @@ On request:
 
     Return true if the Name\_Entry value is of the specified type. The value of `ASN1_TYPE` should be as listed in OpenSSL's `asn1.h`.
 
+# ISSUE REPORTING
+
+Please report any bugs or feature requests using **GitHub**.
+
+- [GitHub Issues](https://github.com/dsully/perl-crypt-openssl-x509/issues)
+
 # SEE ALSO
 
-OpenSSL(1), Crypt::OpenSSL::RSA, Crypt::OpenSSL::Bignum
+- [OpenSSL website](https://www.openssl.org/)
+- [Crypt::OpenSSL::RSA](https://metacpan.org/pod/Crypt::OpenSSL::RSA)
+- [Crypt::OpenSSL::Bignum](https://metacpan.org/pod/Crypt::OpenSSL::Bignum)
+- [Crypt::OpenSSL::Guess](https://metacpan.org/pod/Crypt::OpenSSL::Guess)
 
 # AUTHOR
 
-Dan Sully
+- Dan Sully, original author
+- Jonas Brømsø, current maintainer
+- Please see the ["ACKNOWLEDGEMENTS"](#acknowledgements) section for a list of contributors.
 
-# CONTRIBUTORS
+# ACKNOWLEDGEMENTS
 
-- Florian Schlichting @fschlich, release 1.9.11
-- Timothy Legge, release 1.9.10
-- Patrick Cernko, release 1.9.9
-- Shoichi Kaji, release 1.9.3 and 1.9.8
-- Neil Bowers, release 1.8.13
-- kmx, release 1.8.9
+In alphabetical order.
+
+- @eserte
+- @kmx
+- @stphnlyd
+- Ashley Hindmarsh @bestscarper
+- Bernhard M. Wiedemann @bmwiedemann
+- Brad Davidson @brandond
+- Daniel Kahn Gillmor
+- Daniel Risacher
+- David O'Callaghan
+- David Steinbrunner @dsteinbrunner
+- dsteinwand
+- Florian Schlichting @fschlich
+- IKEDA Soji @ikedas
+- James Hunt @jhunt
+- James Rouzier @jrouzierinverse
+- Johanna @0xxon
+- Jonas Brømsø @jonasbn
+- Louise Doran
+- Michael McClimon @mmcclimon
+- Michal Josef Špaček @michal-josef-spacek
+- Neil Bowers @neilb
+- Nicholas Harteau
+- Otmar Lendl
+- Patrick C. @errror
+- Patrick Cernko
+- Petr Pisar @ppisar
+- pi-rho
+- Salvador Fandiño @salva
 - Sebastian Andrzej Siewior
-- David O'Callaghan, <david.ocallaghan@cs.tcd.ie>
-- Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+- Sho Nakatani @laysakura
+- Shoichi Kaji @skaji
+- Timothy Legge @timlegge 
+- Todd Rinaldo @toddr
+- Uli Scholler
 
 # COPYRIGHT AND LICENSE
 

@@ -8,7 +8,7 @@ use base qw(Exporter);
 
 use Convert::ASN1;
 
-our $VERSION = '1.913';
+our $VERSION = '1.914';
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -512,35 +512,115 @@ Return true if the Name_Entry value is of the specified type. The value of C<ASN
 
 =back
 
-=head1 SEE ALSO
+=head1 ISSUE REPORTING
 
-OpenSSL(1), Crypt::OpenSSL::RSA, Crypt::OpenSSL::Bignum
-
-=head1 AUTHOR
-
-Dan Sully
-
-=head1 CONTRIBUTORS
+Please report any bugs or feature requests using B<GitHub>.
 
 =over
 
-=item * Florian Schlichting @fschlich, release 1.9.11
+=item * L<GitHub Issues|https://github.com/dsully/perl-crypt-openssl-x509/issues>
 
-=item * Timothy Legge, release 1.9.10
+=back
 
-=item * Patrick Cernko, release 1.9.9
+=head1 SEE ALSO
 
-=item * Shoichi Kaji, release 1.9.3 and 1.9.8
+=over
 
-=item * Neil Bowers, release 1.8.13
+=item * L<OpenSSL website|https://www.openssl.org/>
 
-=item * kmx, release 1.8.9
+=item * L<Crypt::OpenSSL::RSA|https://metacpan.org/pod/Crypt::OpenSSL::RSA>
+
+=item * L<Crypt::OpenSSL::Bignum|https://metacpan.org/pod/Crypt::OpenSSL::Bignum>
+
+=item * L<Crypt::OpenSSL::Guess|https://metacpan.org/pod/Crypt::OpenSSL::Guess>
+
+=back
+
+=head1 AUTHOR
+
+=over
+
+=item * Dan Sully, original author
+
+=item * Jonas Brømsø, current maintainer
+
+=item * Please see the L</ACKNOWLEDGEMENTS> section for a list of contributors.
+
+=back
+
+=head1 ACKNOWLEDGEMENTS
+
+In alphabetical order.
+
+=over
+
+=item * @eserte
+
+=item * @kmx
+
+=item * @stphnlyd
+
+=item * Ashley Hindmarsh @bestscarper
+
+=item * Bernhard M. Wiedemann @bmwiedemann
+
+=item * Brad Davidson @brandond
+
+=item * Daniel Kahn Gillmor
+
+=item * Daniel Risacher
+
+=item * David O'Callaghan
+
+=item * David Steinbrunner @dsteinbrunner
+
+=item * dsteinwand
+
+=item * Florian Schlichting @fschlich
+
+=item * IKEDA Soji @ikedas
+
+=item * James Hunt @jhunt
+
+=item * James Rouzier @jrouzierinverse
+
+=item * Johanna @0xxon
+
+=item * Jonas Brømsø @jonasbn
+
+=item * Louise Doran
+
+=item * Michael McClimon @mmcclimon
+
+=item * Michal Josef Špaček @michal-josef-spacek
+
+=item * Neil Bowers @neilb
+
+=item * Nicholas Harteau
+
+=item * Otmar Lendl
+
+=item * Patrick C. @errror
+
+=item * Patrick Cernko
+
+=item * Petr Pisar @ppisar
+
+=item * pi-rho
+
+=item * Salvador Fandiño @salva
 
 =item * Sebastian Andrzej Siewior
 
-=item * David O'Callaghan, E<lt>david.ocallaghan@cs.tcd.ieE<gt>
+=item * Sho Nakatani @laysakura
 
-=item * Daniel Kahn Gillmor E<lt>dkg@fifthhorseman.netE<gt>
+=item * Shoichi Kaji @skaji
+
+=item * Timothy Legge @timlegge 
+
+=item * Todd Rinaldo @toddr
+
+=item * Uli Scholler
 
 =back
 
