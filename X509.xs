@@ -12,6 +12,11 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/opensslconf.h>
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+#include <openssl/rsa.h>
+#include <openssl/dsa.h>
+#include <openssl/bn.h>
+#endif
 #ifndef OPENSSL_NO_EC
 # include <openssl/ec.h>
 #endif
@@ -322,9 +327,12 @@ BOOT:
   for (i = 0; (name = Crypt__OpenSSL__X509__const[i].n); i++) {
     newCONSTSUB(stash, name, newSViv(Crypt__OpenSSL__X509__const[i].v));
   }
-
+#if OPENSSL_VERSION_NUMBER < 0x10100000
   ERR_load_crypto_strings();
-  OPENSSL_add_all_algorithms_conf();
+# ifdef OPENSSL_LOAD_CONF
+  OPENSSL_add_all_algorithms_conf;
+# endif
+#endif
 }
 
 Crypt::OpenSSL::X509
@@ -402,13 +410,12 @@ DESTROY(x509)
 void
 __X509_cleanup(void)
   PPCODE:
-
+#if OPENSSL_VERSION_NUMBER < 0x10100000
   CRYPTO_cleanup_all_ex_data();
   ERR_free_strings();
-#if OPENSSL_VERSION_NUMBER < 0x10100000
   ERR_remove_state(0);
-#endif
   EVP_cleanup();
+#endif
 
 SV*
 accessor(x509)
@@ -460,13 +467,18 @@ accessor(x509)
     BIO_printf(bio, "%08lx", X509_subject_name_hash(x509));
 
   } else if (ix == 5) {
-
+#if OPENSSL_VERSION_NUMBER < 0x10100000
     ASN1_TIME_print(bio, X509_get_notBefore(x509));
+#else
+    ASN1_TIME_print(bio, X509_get0_notBefore(x509));
+#endif
 
   } else if (ix == 6) {
-
+#if OPENSSL_VERSION_NUMBER < 0x10100000
     ASN1_TIME_print(bio, X509_get_notAfter(x509));
-
+#else
+    ASN1_TIME_print(bio, X509_get0_notBefore(x509));
+#endif
   } else if (ix == 7) {
 
     int j;
@@ -585,9 +597,9 @@ bit_length(x509)
 
   PREINIT:
   EVP_PKEY *pkey;
-  DSA *dsa_pkey;
-  RSA *rsa_pkey;
-  EC_KEY *ec_pkey;
+  const DSA *dsa_pkey;
+  const RSA *rsa_pkey;
+  const EC_KEY *ec_pkey;
   const BIGNUM *p;
   const BIGNUM *n;
   int length;
@@ -667,7 +679,7 @@ curve(x509)
   }
   if ( EVP_PKEY_base_id(pkey) == EVP_PKEY_EC ) {
     const EC_GROUP *group;
-    EC_KEY *ec_pkey;
+    const EC_KEY *ec_pkey;
     int nid;
     ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
     if ( (group = EC_KEY_get0_group(ec_pkey)) == NULL) {
@@ -714,7 +726,7 @@ modulus(x509)
 
   pkey_id = EVP_PKEY_base_id(pkey);
   if (pkey_id == EVP_PKEY_RSA) {
-    RSA *rsa_pkey;
+    const RSA *rsa_pkey;
     const BIGNUM *n;
 
     rsa_pkey = EVP_PKEY_get0_RSA(pkey);
@@ -723,7 +735,7 @@ modulus(x509)
     BN_print(bio, n);
 
   } else if (pkey_id == EVP_PKEY_DSA) {
-    DSA *dsa_pkey;
+    const DSA *dsa_pkey;
     const BIGNUM *pub_key;
 
     dsa_pkey = EVP_PKEY_get0_DSA(pkey);
@@ -733,7 +745,7 @@ modulus(x509)
   } else if ( pkey_id == EVP_PKEY_EC ) {
     const EC_POINT *public_key;
     const EC_GROUP *group;
-    EC_KEY *ec_pkey;
+    const EC_KEY *ec_pkey;
     BIGNUM  *pub_key=NULL;
 
     ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
@@ -789,7 +801,7 @@ exponent(x509)
   }
 
   if (EVP_PKEY_base_id(pkey) == EVP_PKEY_RSA) {
-    RSA *rsa_pkey;
+    const RSA *rsa_pkey;
     const BIGNUM *e;
 
     rsa_pkey = EVP_PKEY_get0_RSA(pkey);
@@ -861,7 +873,11 @@ checkend(x509, checkoffset)
   now = time(NULL);
 
   /* given an offset in seconds, will the certificate be expired? */
+#if OPENSSL_VERSION_NUMBER < 0x10100000
   if (ASN1_UTCTIME_cmp_time_t(X509_get_notAfter(x509), now + (int)checkoffset) == -1) {
+#else
+  if (ASN1_UTCTIME_cmp_time_t(X509_get0_notAfter(x509), now + (int)checkoffset) == -1) {
+#endif
     RETVAL = &PL_sv_yes;
   } else {
     RETVAL = &PL_sv_no;
@@ -893,23 +909,30 @@ pubkey(x509)
 
   pkey_id = EVP_PKEY_base_id(pkey);
   if (pkey_id == EVP_PKEY_RSA) {
-    RSA *rsa_pkey;
+    const RSA *rsa_pkey;
 
     rsa_pkey = EVP_PKEY_get0_RSA(pkey);
     PEM_write_bio_RSAPublicKey(bio, rsa_pkey);
 
   } else if (pkey_id == EVP_PKEY_DSA) {
-    DSA *dsa_pkey;
+    const DSA *dsa_pkey;
 
     dsa_pkey = EVP_PKEY_get0_DSA(pkey);
-
-    PEM_write_bio_DSA_PUBKEY(bio, dsa_pkey);
+    /* In openssl v3, EVP_PKEY_get0_DSA came to return "const DSA*" type.
+     * However PEM_write_bio_DSA_PUBKEY still needs non-const DSA*.
+     * So we should force to cast dsa_pkey to "DSA*" here.
+     */
+    PEM_write_bio_DSA_PUBKEY(bio, (DSA*)dsa_pkey);
 #ifndef OPENSSL_NO_EC
   } else if (pkey_id == EVP_PKEY_EC ) {
-    EC_KEY *ec_pkey;
+    const EC_KEY *ec_pkey;
 
     ec_pkey = EVP_PKEY_get0_EC_KEY(pkey);
-    PEM_write_bio_EC_PUBKEY(bio, ec_pkey);
+    /* In openssl v3, EVP_PKEY_get0_EC_KEY came to return "const EC_KEY*" type.
+     * However PEM_write_bio_EC_PUBKEY still needs non-const EC_KEY*.
+     * So we should force to cast ec_pkey to "EC_KEY*" here.
+     */
+    PEM_write_bio_EC_PUBKEY(bio, (EC_KEY*)ec_pkey);
 #endif
   } else {
 
