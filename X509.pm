@@ -196,6 +196,8 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
