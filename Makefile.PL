@@ -15,20 +15,17 @@ my %args = (
   INC => openssl_inc_paths(),
 );
 
-my $cc_option_flags = '-O2 -g';
+#my $api_ver = '0x00908000L';  # (version 0.9.8)
+#my $api_ver = '0x10000000L';  # (version 1.0.0)
+my $api_ver = '0x10100000L';  # (version 1.1.0)
+
+my $cc_option_flags = ' -DOPENSSL_API_COMPAT=$api_ver -O2 -g';
 
 if ($Config::Config{cc} =~ /gcc/i) {
   $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Werror' : ' -Wall';
 } else {
   $cc_option_flags .= '';
 }
-
-#my $api_ver = '0x00908000L';  # (version 0.9.8)
-my $api_ver = '0x10000000L';  # (version 1.0.0)
-#my $api_ver = '0x10100000L';  # (version 1.1.0)
-
-#my $cc_option_flags = "-DOPENSSL_API_COMPAT=$api_ver -O2 -g -Wall -Werror";
-my $cc_option_flags = "-DOPENSSL_NO_DEPRECATED_0_9_8 -O2 -g -Wall -Werror";
 
 if ($Config{gccversion} =~ /llvm/i) {
   if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.[0-5]/) {
