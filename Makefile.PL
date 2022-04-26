@@ -8,27 +8,19 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 use Config;
-use File::Spec;
+use Crypt::OpenSSL::Guess qw(openssl_lib_paths openssl_inc_paths);
 
-my %args;
+my %args = (
+  LIBS => [openssl_lib_paths().' -lssl -lcrypto'],
+  INC => openssl_inc_paths(),
+);
 
-if ($^O ne 'MSWin32' and my $prefix = `brew --prefix --installed openssl\@1.1 2>@{[File::Spec->devnull]}`) {
-  chomp $prefix;
-  $args{INC} = "-I$prefix/include";
-  $args{LIBS} = ["-L$prefix/lib -lcrypto -lssl"];
+my $cc_option_flags = '-O2 -g';
+
+if ($Config::Config{cc} =~ /gcc/i) {
+  $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Werror' : ' -Wall';
 } else {
-  $args{INC} = '-I/usr/local/opt/openssl/include -I/usr/local/include/openssl -I/usr/include/openssl -I/usr/local/include/ssl -I/usr/local/ssl/include';
-  $args{LIBS} = ['-L/usr/local/opt/openssl/lib -L/usr/local/lib -L/usr/lib -L/usr/local/ssl/lib -lcrypto -lssl'];
-}
-
-if ($^O eq 'MSWin32') {
-  if (my $libs = `pkg-config --libs libcrypto 2>nul`) {
-    # strawberry perl has pkg-config
-    $args{LIBS} = [ $libs ];
-  } else {
-    $args{LIBS} = ['-llibeay32'] if $Config{cc} =~ /cl/; # msvc with ActivePerl
-    $args{LIBS} = ['-leay32']    if $Config{gccversion}; # gcc
-  }
+  $cc_option_flags .= '';
 }
 
 #my $api_ver = '0x00908000L';  # (version 0.9.8)
@@ -39,7 +31,7 @@ my $api_ver = '0x10000000L';  # (version 1.0.0)
 my $cc_option_flags = "-DOPENSSL_NO_DEPRECATED_0_9_8 -O2 -g -Wall -Werror";
 
 if ($Config{gccversion} =~ /llvm/i) {
-  if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.5/) {
+  if ( $^O eq 'darwin' && $Config{gccversion} =~ /LLVM 12.0.[0-5]/) {
     $cc_option_flags .= ' -Wno-deprecated-declarations -Wno-compound-token-split-by-macro';
   } else {
     $cc_option_flags .= ' -Wno-deprecated-declarations';
@@ -55,7 +47,7 @@ if ($Config{gccversion} =~ /llvm/i) {
 }
 
 if ($Config{myuname} =~ /sunos|solaris/i) {
-  # Any SunStudio flags?
+  $args{OPTIMIZE} = $cc_option_flags;
 } else {
   $args{OPTIMIZE} = $cc_option_flags;
 }
@@ -64,6 +56,8 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "Perl extension to OpenSSL's X509 API.",
   "AUTHOR" => "Dan Sully",
   "CONFIGURE_REQUIRES" => {
+    "Config" => 0,
+    "Crypt::OpenSSL::Guess" => 0,
     "ExtUtils::MakeMaker" => 0
   },
   "DISTNAME" => "Crypt-OpenSSL-X509",
