@@ -28,7 +28,7 @@ if ($Config::Config{cc} =~ /gcc/i) {
 }
 
 if ($Config{gccversion} =~ /llvm/i) {
-  $cc_option_flags .= ' -Wno-deprecated-declarations';
+  $cc_option_flags .= ' -Wall -Wno-deprecated-declarations';
 
   if ($Config{gccversion} =~ /llvm 12/i) {
     $cc_option_flags .= ' -Wno-compound-token-split-by-macro';
