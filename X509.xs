@@ -477,7 +477,7 @@ accessor(x509)
 #if OPENSSL_VERSION_NUMBER < 0x10100000
     ASN1_TIME_print(bio, X509_get_notAfter(x509));
 #else
-    ASN1_TIME_print(bio, X509_get0_notBefore(x509));
+    ASN1_TIME_print(bio, X509_get0_notAfter(x509));
 #endif
   } else if (ix == 7) {
 
