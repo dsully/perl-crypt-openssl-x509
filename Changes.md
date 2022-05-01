@@ -1,6 +1,10 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
-## 1.9.14-TRIAL 2022-04-26
+## 1.9.14 release candidate
+
+- Applied PR [#109](https://github.com/dsully/perl-crypt-openssl-x509/pull/108) from @ikedas fixing a bug found in 1.9.14-TRIAL, where the wrong API was called, propably due to a typo in the name
+
+- Applied PR [#108](https://github.com/dsully/perl-crypt-openssl-x509/pull/108) from @skaji a bug found in 1.9.14-TRIAL, where a possible interpolatation was probibited due to quoting
 
 - Applied patch from @ikedas PR [#105](https://github.com/dsully/perl-crypt-openssl-x509/pull/105) make the pattern match for LLVM version number in the 12 series a bit more liberal. This was followed up by PR [#107](https://github.com/dsully/perl-crypt-openssl-x509/pull/107) by @jonasbn
 
@@ -15,6 +19,12 @@
 - Patch from @timlegge via PR [#103](https://github.com/dsully/perl-crypt-openssl-x509/pull/103) improving handling of OpenSSL API versions
 
 - Patch from @skaji via PR [#100](https://github.com/dsully/perl-crypt-openssl-x509/pull/100) making use of constants in XS code
+
+## 1.9.14-TRIAL 2022-04-26
+
+- Release leading up to 1.9.14, see that release for details
+
+- This is a TRIAL release, in order to get some feedback from CPAN-testers prior to making a proper public release, since the release contains a significant number of changes. Additional trial releases might follow, based on findings and feedback
 
 ## 1.9.13 2022-02-26
 
