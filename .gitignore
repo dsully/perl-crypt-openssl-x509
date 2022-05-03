@@ -14,3 +14,4 @@ MANIFEST.bak
 MANIFEST
 /Crypt-OpenSSL-X509-*
 .build/
+Changes.md
