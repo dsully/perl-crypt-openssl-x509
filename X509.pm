@@ -410,6 +410,20 @@ Return a hash of Extensions indexed by OID or name.
 
 Return true if the certificate has the extension specified by C<OID>.
 
+=item subjectaltname ( )
+
+Uses Convert::ASN1 to extract the Subject Alternative Names from the X509 object.
+subjectaltname ( ) returns an array of "rfc822Name"s
+
+    [
+        {
+            'rfc822Name' => 'altuser@mpi-sws.org'
+        },
+        {
+            'rfc822Name' => 'user@mpi-sws.org'
+        },
+    ]
+
 =back
 
 =head2 X509::Extension METHODS

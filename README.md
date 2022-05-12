@@ -189,6 +189,20 @@ On request:
 
     Return true if the certificate has the extension specified by `OID`.
 
+- subjectaltname ( )
+
+    Uses Convert::ASN1 to extract the Subject Alternative Names from the X509 object.
+    subjectaltname ( ) returns an array of "rfc822Name"s
+
+        [
+            {
+                'rfc822Name' => 'altuser@mpi-sws.org'
+            },
+            {
+                'rfc822Name' => 'user@mpi-sws.org'
+            },
+        ]
+
 ## X509::Extension METHODS
 
 - critical ( )
