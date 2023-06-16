@@ -19,6 +19,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: install dependencies
+        run: |
+          brew install openssl@1.1
       - name: uses install-with-cpanm
         uses: perl-actions/install-with-cpanm@v1
         with:
