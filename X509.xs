@@ -329,7 +329,7 @@ BOOT:
   }
 #if OPENSSL_VERSION_NUMBER < 0x10100000
   ERR_load_crypto_strings();
-  OPENSSL_add_all_algorithms_conf;
+  OPENSSL_add_all_algorithms_conf();
 #endif
 }
 
