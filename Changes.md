@@ -1,5 +1,9 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 1.9.15 2023-06-16
+
+- Applied patch for issue [#112](https://github.com/dsully/perl-crypt-openssl-x509/issues/112) from @dakkar, via PR [#113]((https://github.com/dsully/perl-crypt-openssl-x509/pull/113) by @jonasbn
+
 ## 1.9.14 2022-05-03
 
 - Applied PR [#109](https://github.com/dsully/perl-crypt-openssl-x509/pull/108) from @ikedas fixing a bug found in 1.9.14-TRIAL, where the wrong API was called, propably due to a typo in the name
