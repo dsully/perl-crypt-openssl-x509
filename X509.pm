@@ -178,6 +178,11 @@ sub Crypt::OpenSSL::X509::subjectaltname {
   $upn->prepare(q(UPN UTF8String)) or die ( "Prepare UPN" );
   $asn->registeroid( '1.3.6.1.4.1.311.20.2.3', $upn );
 
+  # RFC 4985 Service name
+  my $srv = Convert::ASN1->new or die( "New SRV" );
+  $srv->prepare(q(SRVName IA5String)) or die ( "Prepare SRV" );
+  $asn->registeroid( '1.3.6.1.5.5.7.8.7', $srv );
+
   # This is an important bit - if you don't do the find the decode
   # will randomly fail/succeed.  This is required to work
   my $asn_node = $asn->find('SubjectAltName')
@@ -199,7 +204,8 @@ sub Crypt::OpenSSL::X509::subjectaltname {
               }
           } elsif ( $item eq 'otherName' ) {
               my $otherName = $name->{otherName};
-              if ( $otherName->{type} eq '1.3.6.1.4.1.311.20.2.3' ) {
+              if ( $otherName->{type} eq '1.3.6.1.4.1.311.20.2.3' || 
+                    $otherName->{type} eq '1.3.6.1.5.5.7.8.7' ) {
                   my $value;
                   foreach my $val (keys %{$otherName->{value}}) {
                       $value .= $val . "::" . $otherName->{value}{$val};

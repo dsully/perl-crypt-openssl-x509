@@ -1,4 +1,4 @@
-use Test::More tests => 21;
+use Test::More tests => 23;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
