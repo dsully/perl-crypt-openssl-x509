@@ -114,7 +114,7 @@ sub Crypt::OpenSSL::X509::subjectaltname {
   my $ok = $asn->prepare(q<
     AnotherName ::= SEQUENCE {
       type    OBJECT IDENTIFIER,
-      value      [0] EXPLICIT ANY } --DEFINED BY type-id }
+      value      [0] EXPLICIT ANY DEFINED BY type }
 
     EDIPartyName ::= SEQUENCE {
       nameAssigner            [0]     DirectoryString OPTIONAL,
@@ -158,6 +158,7 @@ sub Crypt::OpenSSL::X509::subjectaltname {
     GeneralNames ::= SEQUENCE OF GeneralName
 
     GeneralName ::= CHOICE {
+      otherName                       [0]     AnotherName,
       rfc822Name                      [1]     IA5String,
       dNSName                         [2]     IA5String,
       x400Address                     [3]     ANY, --ORAddress,
@@ -172,6 +173,11 @@ sub Crypt::OpenSSL::X509::subjectaltname {
   die '*** Could not prepare definition: '.$asn->error()
       if !$ok;
 
+  # Microsoft's User Principal Name (Smart Card Logon)
+  my $upn = Convert::ASN1->new or die( "New UPN" );
+  $upn->prepare(q(UPN UTF8String)) or die ( "Prepare UPN" );
+  $asn->registeroid( '1.3.6.1.4.1.311.20.2.3', $upn );
+
   # This is an important bit - if you don't do the find the decode
   # will randomly fail/succeed.  This is required to work
   my $asn_node = $asn->find('SubjectAltName')
@@ -179,6 +185,30 @@ sub Crypt::OpenSSL::X509::subjectaltname {
 
   my $san = $asn_node->decode($bin_data)
       or die 'Unable to decode SubjectAltName: '.$asn_node->error;
+
+  foreach my $name ( @$san ) {
+      foreach my $item (keys %$name) {
+          if( $item eq 'iPAddress' ) {
+              my $ip = $name->{$item};
+              if( length $ip == 4 ) {
+                  $name->{iPAddress} = sprintf( '%d.%d.%d.%d', unpack( 'C4', $ip ) );
+              } elsif( length $ip == 16 ) {
+                  $name->{iPAddress} = sprintf( '%x:%x:%x:%x:%x:%x:%x:%x', unpack( 'n8', $ip ) );
+              } else {
+                  $name->{iPAddress} = unpack( 'H*', $ip );
+              }
+          } elsif ( $item eq 'otherName' ) {
+              my $otherName = $name->{otherName};
+              if ( $otherName->{type} eq '1.3.6.1.4.1.311.20.2.3' ) {
+                  my $value;
+                  foreach my $val (keys %{$otherName->{value}}) {
+                      $value .= $val . "::" . $otherName->{value}{$val};
+                  }
+                  $name->{otherName} = $value;
+              }
+          }
+      }
+  }
 
   return $san;
 }
