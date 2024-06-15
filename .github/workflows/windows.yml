@@ -33,11 +33,16 @@ jobs:
           echo "C:\strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: perl -V
         run: perl -V
-
-      - name: Run Tests
+      - name: Download cpanm
         run: |
-          curl -sL https://cpanmin.us/ | perl - -nq --with-configure --with-develop --installdeps -v .
+          cpan App::cpanminus
+      - name: Install Dependencies
+        run: |
+          cpanm -nq --with-develop --installdeps -v .
+      - name: Build Module
+        run: |
           perl Makefile.PL
           gmake
-          gmake test
-
+      - name: Run Tests
+        run: |
+          gmake test TEST_VERBOSE=1
