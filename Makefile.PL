@@ -10,8 +10,13 @@ use ExtUtils::MakeMaker;
 use Config;
 use Crypt::OpenSSL::Guess qw(openssl_lib_paths openssl_inc_paths);
 
+my $libs = ' -lssl -lcrypto';
+if ($Config{osname} eq 'aix') {
+  $libs = $libs . ' -lz';
+}
+
 my %args = (
-  LIBS => [openssl_lib_paths().' -lssl -lcrypto'],
+  LIBS => [openssl_lib_paths(). $libs],
   INC => openssl_inc_paths(),
 );
 
