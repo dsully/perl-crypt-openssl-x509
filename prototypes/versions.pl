@@ -14,9 +14,23 @@ print STDERR Dumper $ver_1;
 print STDERR Dumper $ver_2;
 
 if ($ver_1 > $ver_2) {
-    print "$old is higher than $new\n";
+    print "using version: $old is higher than $new\n";
 } else {
-    print "$new is higher than $old\n";
+    print "using version: $new is higher than $old\n";
 }
+
+if ($old gt $new) {
+    print "not using version: $old is higher than $new\n";
+} else {
+    print "not using version: $new is higher than $old\n";
+}
+
+
+if ($ver_1 gt $new) {
+    print "combined using version: $old is higher than $new\n";
+} else {
+    print "combined not using version: $new is higher than $old\n";
+}
+
 
 exit 0;
