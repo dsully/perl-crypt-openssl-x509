@@ -8,7 +8,7 @@ use base qw(Exporter);
 
 use Convert::ASN1;
 
-use version; our $VERSION = version->declare('1.10.0');
+use version; our $VERSION = version->declare('1.10.1');
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
