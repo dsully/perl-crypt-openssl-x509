@@ -1,4 +1,5 @@
 requires 'Convert::ASN1', '0.33';
+requires 'version', '0.77';
 
 on 'configure' => sub {
   requires 'ExtUtils::MakeMaker' => '0';
