@@ -3,8 +3,8 @@ use strict;
 use version;
 use Data::Dumper;
 
-my $old = '1.10.0';
-my $new = '1.9.15';
+my $old = '2.0.0';
+my $new = '1.915';
 
 my $ver_1 = version->parse($old);
 my $ver_2 = version->parse($new);
