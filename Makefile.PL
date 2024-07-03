@@ -70,13 +70,12 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Crypt::OpenSSL::X509",
   "PREREQ_PM" => {
-    "Convert::ASN1" => "0.33",
-    "version" => "0.77"
+    "Convert::ASN1" => "0.33"
   },
   "TEST_REQUIRES" => {
     "Test::Pod" => "1.00"
   },
-  "VERSION" => "1.10.1",
+  "VERSION" => "1.1001",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -89,8 +88,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "Convert::ASN1" => "0.33",
-  "Test::Pod" => "1.00",
-  "version" => "0.77"
+  "Test::Pod" => "1.00"
 );
 
 unless ( eval { ExtUtils::MakeMaker->VERSION('6.63_03') } ) {
