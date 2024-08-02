@@ -1,0 +1,19 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  Convert-ASN1-0.34
+    pathname: T/TI/TIMLEGGE/Convert-ASN1-0.34.tar.gz
+    provides:
+      Convert::ASN1 0.34
+    requirements:
+      ExtUtils::MakeMaker 0
+  Test-Pod-1.52
+    pathname: E/ET/ETHER/Test-Pod-1.52.tar.gz
+    provides:
+      Test::Pod 1.52
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Find 0
+      Pod::Simple 3.05
+      Test::Builder::Tester 1.02
+      Test::More 0.62
+      perl 5.008
