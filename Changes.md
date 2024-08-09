@@ -1,5 +1,9 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.0.1 2024-08-09
+
+- Trimming the distribution tarball, removing files not needed for the distribution, see issue [#120](https://github.com/dsully/perl-crypt-openssl-x509/issues/120) reported by @gregoa. Addressed via PR [#121](https://github.com/dsully/perl-crypt-openssl-x509/pull/121) by @jonasbn
+
 ## 2.0.0 2024-07-03
 
 - Applied PR [#119](https://github.com/dsully/perl-crypt-openssl-x509/pull/119) from @timlegge improving detection of OpenSSL libraries under if not installed in standard locations
