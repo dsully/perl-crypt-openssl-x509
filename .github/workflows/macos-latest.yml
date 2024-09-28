@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.2.0
       - name: install dependencies
         run: |
           brew install openssl@1.1
       - name: uses install-with-cpanm
-        uses: perl-actions/install-with-cpanm@v1
+        uses: perl-actions/install-with-cpanm@v1.7
         with:
           cpanfile: "cpanfile"
           args: "--with-configure"
