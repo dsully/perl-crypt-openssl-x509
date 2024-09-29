@@ -413,7 +413,17 @@ Return true if the certificate has the extension specified by C<OID>.
 =item subjectaltname ( )
 
 Uses Convert::ASN1 to extract the Subject Alternative Names from the X509 object.
-subjectaltname ( ) returns an array of "rfc822Name"s
+subjectaltname ( ) returns an array of objects, each object representing a SAN.
+
+These could be of, but not limited to, the following types:
+
+=over 4
+
+=item * rfc822Name
+
+=item * dNSName
+
+=back
 
     [
         {
