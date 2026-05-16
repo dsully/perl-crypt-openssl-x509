@@ -415,15 +415,29 @@ Return true if the certificate has the extension specified by C<OID>.
 Uses Convert::ASN1 to extract the Subject Alternative Names from the X509 object.
 subjectaltname ( ) returns an array of objects, each object representing a SAN.
 
-These could be of, but not limited to, the following types:
+These could be of the following types (as defined in the embedded ASN.1 schema):
 
 =over 4
 
-=item * rfc822Name
+=item * rfc822Name — email address (IA5String)
 
-=item * dNSName
+=item * dNSName — DNS hostname (IA5String)
+
+=item * x400Address — X.400 address (ANY)
+
+=item * directoryName — Distinguished Name (RDNSequence)
+
+=item * ediPartyName — EDI party name (EDIPartyName)
+
+=item * uniformResourceIdentifier — URI (IA5String)
+
+=item * iPAddress — IP address (OCTET STRING; 4 bytes IPv4, 16 bytes IPv6)
+
+=item * registeredID — OID (OBJECT IDENTIFIER)
 
 =back
+
+Note: C<otherName> (tag [0] in RFC 5280) is not implemented and will never appear in the output.
 
     [
         {
