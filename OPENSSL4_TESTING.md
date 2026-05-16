@@ -150,7 +150,7 @@ Create a test script to verify both versions:
 
 ```bash
 #!/bin/bash
-# test_both_openssl.sh
+# test.sh
 
 set -e
 
@@ -209,8 +209,8 @@ echo "================================"
 Make it executable and run:
 
 ```bash
-chmod +x test_both_openssl.sh
-./test_both_openssl.sh
+chmod +x test.sh
+./test.sh
 ```
 
 ## Manual Verification
