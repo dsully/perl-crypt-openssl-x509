@@ -18,3 +18,5 @@ prototypes
 local/
 cpanfile
 cpanfile.snapshot
+OPENSSL4_TESTING.md
+CLAUDE.md

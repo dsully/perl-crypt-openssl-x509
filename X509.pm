@@ -8,7 +8,7 @@ use base qw(Exporter);
 
 use Convert::ASN1;
 
-use version; our $VERSION = version->declare('2.0.1');
+use version; our $VERSION = version->declare('2.1.0');
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -686,7 +686,7 @@ In alphabetical order.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004-2022 by Dan Sully
+Copyright 2004 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

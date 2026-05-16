@@ -204,7 +204,20 @@ On request:
 - subjectaltname ( )
 
     Uses Convert::ASN1 to extract the Subject Alternative Names from the X509 object.
-    subjectaltname ( ) returns an array of "rfc822Name"s
+    subjectaltname ( ) returns an array of objects, each object representing a SAN.
+
+    These could be of the following types (as defined in the embedded ASN.1 schema):
+
+    - rfc822Name — email address (IA5String)
+    - dNSName — DNS hostname (IA5String)
+    - x400Address — X.400 address (ANY)
+    - directoryName — Distinguished Name (RDNSequence)
+    - ediPartyName — EDI party name (EDIPartyName)
+    - uniformResourceIdentifier — URI (IA5String)
+    - iPAddress — IP address (OCTET STRING; 4 bytes IPv4, 16 bytes IPv6)
+    - registeredID — OID (OBJECT IDENTIFIER)
+
+    Note: `otherName` (tag \[0\] in RFC 5280) is not implemented and will never appear in the output.
 
         [
             {
@@ -353,7 +366,7 @@ In alphabetical order.
 
 # COPYRIGHT AND LICENSE
 
-Copyright 2004-2022 by Dan Sully
+Copyright 2004 by Dan Sully
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
