@@ -1551,8 +1551,6 @@ encoding(name_entry)
   Crypt::OpenSSL::X509::Name_Entry name_entry;
 
   CODE:
-  RETVAL = NULL;
-
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
   {
     int asn1_str_type = ASN1_STRING_type(X509_NAME_ENTRY_get_data(name_entry));
@@ -1562,9 +1560,13 @@ encoding(name_entry)
       RETVAL = "ia5String";
     } else if (asn1_str_type == V_ASN1_UTF8STRING) {
       RETVAL = "utf8String";
+    } else {
+      RETVAL = NULL;
     }
   }
 #else
+  RETVAL = NULL;
+
   if (X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_PRINTABLESTRING) {
     RETVAL = "printableString";
 
