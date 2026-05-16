@@ -548,8 +548,13 @@ sig_print(x509)
   CODE:
 
   X509_get0_signature(&psig, NULL, x509);
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+  n   = ASN1_STRING_length((ASN1_STRING *)psig);
+  s   = (unsigned char *)ASN1_STRING_get0_data((ASN1_STRING *)psig);
+#else
   n   = psig->length;
   s   = psig->data;
+#endif
   bio = sv_bio_create();
 
   for (i=0; i<n; i++) {
@@ -1151,7 +1156,11 @@ ia5string(ext)
   /* retrieving the value of an ia5string object */
   bio = sv_bio_create();
   str = X509V3_EXT_d2i(ext);
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+  BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)str));
+#else
   BIO_printf(bio,"%s", str->data);
+#endif
   ASN1_IA5STRING_free(str);
 
   RETVAL = sv_bio_final(bio);
@@ -1259,12 +1268,20 @@ keyid_data(ext)
   if (nid == NID_authority_key_identifier) {
 
     akid = X509V3_EXT_d2i(ext);
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+    BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid));
+#else
     BIO_printf(bio, "%s", akid->keyid->data);
+#endif
 
   } else if (nid == NID_subject_key_identifier) {
 
     skid = X509V3_EXT_d2i(ext);
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+    BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)skid));
+#else
     BIO_printf(bio, "%s", skid->data);
+#endif
   }
 
   RETVAL = sv_bio_final(bio);
@@ -1520,7 +1537,11 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
   is_utf8string = V_ASN1_UTF8STRING
 
   CODE:
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+  RETVAL = (ASN1_STRING_type(X509_NAME_ENTRY_get_data(name_entry)) == (ix == 1 ? asn1_type : ix));
+#else
   RETVAL = (X509_NAME_ENTRY_get_data(name_entry)->type == (ix == 1 ? asn1_type : ix));
+#endif
 
   OUTPUT:
   RETVAL
@@ -1532,6 +1553,18 @@ encoding(name_entry)
   CODE:
   RETVAL = NULL;
 
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+  {
+    int asn1_str_type = ASN1_STRING_type(X509_NAME_ENTRY_get_data(name_entry));
+    if (asn1_str_type == V_ASN1_PRINTABLESTRING) {
+      RETVAL = "printableString";
+    } else if (asn1_str_type == V_ASN1_IA5STRING) {
+      RETVAL = "ia5String";
+    } else if (asn1_str_type == V_ASN1_UTF8STRING) {
+      RETVAL = "utf8String";
+    }
+  }
+#else
   if (X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_PRINTABLESTRING) {
     RETVAL = "printableString";
 
@@ -1541,6 +1574,7 @@ encoding(name_entry)
   } else if(X509_NAME_ENTRY_get_data(name_entry)->type == V_ASN1_UTF8STRING) {
     RETVAL = "utf8String";
   }
+#endif
 
   OUTPUT:
   RETVAL
