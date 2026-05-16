@@ -36,4 +36,6 @@ inc/
 
 # Carton
 local/
+X509.c
+X509-68e39f97.o.tmp
 .claude/settings.local.json
