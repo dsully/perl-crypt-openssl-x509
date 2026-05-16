@@ -19,6 +19,18 @@ All changes use conditional compilation (`#if OPENSSL_VERSION_NUMBER >= 0x400000
 
 ## Prerequisites
 
+### Perl Dependencies (Carton)
+
+This project uses [Carton](https://metacpan.org/pod/Carton) for dependency management. Install it if you don't have it:
+
+```bash
+# Install Carton
+cpanm Carton
+
+# Or via system package manager
+brew install carton  # macOS
+```
+
 ### macOS (Homebrew)
 
 Install multiple OpenSSL versions:
@@ -62,24 +74,27 @@ export LDFLAGS="-L$OPENSSL_PREFIX/lib"
 export CPPFLAGS="-I$OPENSSL_PREFIX/include"
 ```
 
-### Build and Test
+### Install Dependencies and Build
 
 ```bash
+# Install Perl dependencies via Carton (installs to local/)
+carton install
+
 # Clean previous builds
 make clean 2>/dev/null || true
 rm -f Makefile.old
 
 # Generate Makefile with OpenSSL 3.x
-perl Makefile.PL
+carton exec perl Makefile.PL
 
 # Verify OpenSSL version detected
 grep OPENSSL_VERSION Makefile
 
 # Build
-make
+carton exec make
 
-# Run tests
-make test
+# Run tests with Carton environment
+carton exec make test
 
 # Check for successful compilation
 echo $?  # Should be 0
@@ -102,25 +117,28 @@ export CPPFLAGS="-I$OPENSSL_PREFIX/include"
 export DYLD_LIBRARY_PATH="$OPENSSL_PREFIX/lib:$DYLD_LIBRARY_PATH"
 ```
 
-### Build and Test
+### Install Dependencies and Build
 
 ```bash
+# Install Perl dependencies via Carton (if not already done)
+carton install
+
 # Clean previous builds
 make clean 2>/dev/null || true
 rm -f Makefile.old
 
 # Generate Makefile with OpenSSL 4.x
-perl Makefile.PL
+carton exec perl Makefile.PL
 
 # Verify OpenSSL version detected
 grep OPENSSL_VERSION Makefile
 # Should show 0x40000000 or higher
 
 # Build (should compile without ASN1 struct errors)
-make
+carton exec make
 
 # Run tests
-make test
+carton exec make test
 
 # Verify all tests pass
 echo $?  # Should be 0
@@ -135,6 +153,10 @@ Create a test script to verify both versions:
 # test_both_openssl.sh
 
 set -e
+
+# Install dependencies once at the start
+echo "Installing Perl dependencies via Carton..."
+carton install
 
 test_openssl_version() {
     local VERSION=$1
@@ -155,7 +177,7 @@ test_openssl_version() {
     rm -f Makefile.old
     
     # Configure
-    perl Makefile.PL
+    carton exec perl Makefile.PL
     
     # Verify version
     echo -n "Detected OpenSSL version: "
@@ -163,11 +185,11 @@ test_openssl_version() {
     
     # Build
     echo "Building..."
-    make
+    carton exec make
     
     # Test
     echo "Running tests..."
-    make test
+    carton exec make test
     
     echo "✓ OpenSSL $VERSION: SUCCESS"
     echo ""
@@ -196,7 +218,8 @@ chmod +x test_both_openssl.sh
 ### Check OpenSSL Version at Runtime
 
 ```bash
-perl -Mblib -MCrypt::OpenSSL::X509 -e 'print Crypt::OpenSSL::X509->OPENSSL_VERSION_NUMBER . "\n"'
+# Using Carton environment
+carton exec perl -Mblib -MCrypt::OpenSSL::X509 -e 'print Crypt::OpenSSL::X509->OPENSSL_VERSION_NUMBER . "\n"'
 ```
 
 ### Verify No Direct Struct Access Compilation Errors
@@ -216,9 +239,9 @@ You may still see warnings about discarded const qualifiers (these are pre-exist
 ### Issue: Wrong OpenSSL Version Detected
 
 ```bash
-# Force specific OpenSSL path
-perl Makefile.PL INC="-I/path/to/openssl/include" \
-                 LIBS="-L/path/to/openssl/lib -lssl -lcrypto"
+# Force specific OpenSSL path with Carton
+carton exec perl Makefile.PL INC="-I/path/to/openssl/include" \
+                              LIBS="-L/path/to/openssl/lib -lssl -lcrypto"
 ```
 
 ### Issue: Library Not Found at Runtime
@@ -235,12 +258,22 @@ otool -L blib/arch/auto/Crypt/OpenSSL/X509/X509.bundle
 
 ```bash
 # Check which OpenSSL is being used
-perl Makefile.PL
+carton exec perl Makefile.PL
 grep -E "OPENSSL|INC|LIBS" Makefile
 
 # Explicitly set paths
 unset PKG_CONFIG_PATH
 export PKG_CONFIG_PATH="/specific/openssl/lib/pkgconfig"
+```
+
+### Issue: Missing Perl Dependencies
+
+```bash
+# Ensure Carton dependencies are installed
+carton install --deployment
+
+# Check installed modules
+carton list
 ```
 
 ## CI/CD Considerations
@@ -253,6 +286,12 @@ matrix:
   openssl-version: ['3.0', '3.5', '4.0']
   
 steps:
+  - name: Install Carton
+    run: cpanm -n Carton
+    
+  - name: Install Perl dependencies
+    run: carton install --deployment
+      
   - name: Install OpenSSL
     run: |
       # Install specific OpenSSL version
@@ -260,9 +299,9 @@ steps:
   - name: Build and Test
     run: |
       export OPENSSL_PREFIX=/path/to/openssl-${{ matrix.openssl-version }}
-      perl Makefile.PL
-      make
-      make test
+      carton exec perl Makefile.PL
+      carton exec make
+      carton exec make test
 ```
 
 ## Expected Results
@@ -283,13 +322,13 @@ steps:
 For comprehensive validation:
 
 ```bash
-# Run extended tests
-prove -lv t/
+# Run extended tests with Carton
+carton exec prove -lv t/
 
 # Test specific functionality
-perl -Mblib t/x509.t
-perl -Mblib t/san.t
-perl -Mblib t/utf8.t
+carton exec perl -Mblib t/x509.t
+carton exec perl -Mblib t/san.t
+carton exec perl -Mblib t/utf8.t
 ```
 
 ## Reporting Issues
