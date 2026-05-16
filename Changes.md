@@ -1,5 +1,11 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.0 2026-05-16
+
+- Applied PR [#124](https://github.com/dsully/perl-crypt-openssl-x509/pull/124) adding OpenSSL 4.0 compatibility, addressing issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). OpenSSL 4.0.0 made `ASN1_STRING` types opaque, breaking direct struct member access. Conditional compilation (`OPENSSL_VERSION_NUMBER >= 0x40000000L`) now uses accessor functions (`ASN1_STRING_length()`, `ASN1_STRING_get0_data()`, `ASN1_STRING_type()`) for OpenSSL 4.x while maintaining backward compatibility with earlier versions. Fixed functions: `sig_print()`, `ia5string()`, `keyid_data()`, `is_asn1_type()`, `encoding()`. Also fixed a buffer over-read and memory leaks in `ia5string()` and `keyid_data()`. Added `OPENSSL4_TESTING.md` with build and test instructions and `scripts/test.sh` for testing against multiple OpenSSL versions. Contributed by @jonasbn with co-authoring from Copilot and Claude
+
+- Applied PR [#122](https://github.com/dsully/perl-crypt-openssl-x509/pull/122) improving documentation for the `subjectaltname` method, addressing issue [#92](https://github.com/dsully/perl-crypt-openssl-x509/issues/92). All eight `GeneralName` types defined in the embedded ASN.1 schema are now listed with type annotations; notes that `otherName` (tag `[0]` per RFC 5280) is not implemented. Contributed by @jonasbn
+
 ## 2.0.1 2024-08-09
 
 - Trimming the distribution tarball, removing files not needed for the distribution, see issue [#120](https://github.com/dsully/perl-crypt-openssl-x509/issues/120) reported by @gregoa. Addressed via PR [#121](https://github.com/dsully/perl-crypt-openssl-x509/pull/121) by @jonasbn
