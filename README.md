@@ -54,6 +54,20 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
     certificates where there is a X509v3 Extension of the form
     "X509v3 Subject Alternative Name: email=user@domain".
 
+## SUPPORTED OPENSSL VERSIONS
+
+This module supports multiple versions of OpenSSL and maintains backward compatibility:
+
+- **OpenSSL 1.0.x** - Legacy support (1.0.2 and later)
+- **OpenSSL 1.1.x** - Full support
+- **OpenSSL 3.x** - Full support (current stable)
+- **OpenSSL 4.x** - Full support (with ASN1 opaque structure compatibility)
+- **LibreSSL 2.x/3.x** - Compatible
+
+OpenSSL 4.0.0 introduced opaque ASN1 string types, requiring the use of accessor functions instead of direct structure member access. This module uses conditional compilation to maintain compatibility across all versions while supporting the new OpenSSL 4.x API requirements.
+
+For detailed information about building and testing with different OpenSSL versions, see the `OPENSSL4_TESTING.md` file included in the distribution.
+
 ## EXPORT
 
 None by default.
