@@ -36,3 +36,4 @@ inc/
 
 # Carton
 local/
+.claude/settings.local.json
