@@ -1157,9 +1157,10 @@ ia5string(ext)
   bio = sv_bio_create();
   str = X509V3_EXT_d2i(ext);
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-  BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)str));
+  BIO_write(bio, ASN1_STRING_get0_data((ASN1_STRING *)str),
+                 ASN1_STRING_length((ASN1_STRING *)str));
 #else
-  BIO_printf(bio,"%s", str->data);
+  BIO_write(bio, str->data, str->length);
 #endif
   ASN1_IA5STRING_free(str);
 
@@ -1255,7 +1256,8 @@ keyid_data(ext)
   PREINIT:
   AUTHORITY_KEYID *akid;
   ASN1_OCTET_STRING *skid;
-  int nid;
+  int nid, i, len;
+  const unsigned char *p;
   ASN1_OBJECT *object;
   BIO *bio;
 
@@ -1269,19 +1271,27 @@ keyid_data(ext)
 
     akid = X509V3_EXT_d2i(ext);
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid));
+    p   = ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid);
+    len = ASN1_STRING_length((ASN1_STRING *)akid->keyid);
 #else
-    BIO_printf(bio, "%s", akid->keyid->data);
+    p   = akid->keyid->data;
+    len = akid->keyid->length;
 #endif
+    for (i = 0; i < len; i++) BIO_printf(bio, "%02x", p[i]);
+    AUTHORITY_KEYID_free(akid);
 
   } else if (nid == NID_subject_key_identifier) {
 
     skid = X509V3_EXT_d2i(ext);
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    BIO_printf(bio, "%s", ASN1_STRING_get0_data((ASN1_STRING *)skid));
+    p   = ASN1_STRING_get0_data((ASN1_STRING *)skid);
+    len = ASN1_STRING_length((ASN1_STRING *)skid);
 #else
-    BIO_printf(bio, "%s", skid->data);
+    p   = skid->data;
+    len = skid->length;
 #endif
+    for (i = 0; i < len; i++) BIO_printf(bio, "%02x", p[i]);
+    ASN1_OCTET_STRING_free(skid);
   }
 
   RETVAL = sv_bio_final(bio);
