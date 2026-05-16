@@ -1256,7 +1256,7 @@ keyid_data(ext)
   PREINIT:
   AUTHORITY_KEYID *akid;
   ASN1_OCTET_STRING *skid;
-  int nid, i, len;
+  int nid, len;
   const unsigned char *p;
   ASN1_OBJECT *object;
   BIO *bio;
@@ -1277,7 +1277,7 @@ keyid_data(ext)
     p   = akid->keyid->data;
     len = akid->keyid->length;
 #endif
-    for (i = 0; i < len; i++) BIO_printf(bio, "%02x", p[i]);
+    BIO_write(bio, p, len);
     AUTHORITY_KEYID_free(akid);
 
   } else if (nid == NID_subject_key_identifier) {
@@ -1290,7 +1290,7 @@ keyid_data(ext)
     p   = skid->data;
     len = skid->length;
 #endif
-    for (i = 0; i < len; i++) BIO_printf(bio, "%02x", p[i]);
+    BIO_write(bio, p, len);
     ASN1_OCTET_STRING_free(skid);
   }
 
