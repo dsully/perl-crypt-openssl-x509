@@ -276,7 +276,7 @@ static HV* hv_exts(X509* x509, int no_name) {
     r = 0;
     ckey = NULL;
 
-    ext = X509_get_ext(x509, i);
+    ext = (X509_EXTENSION *)X509_get_ext(x509, i);
 
     if (ext == NULL) croak("Extension %d unavailable\n", i);
 
@@ -448,9 +448,9 @@ accessor(x509)
   if (ix == 1 || ix == 2) {
 
     if (ix == 1) {
-      name = X509_get_subject_name(x509);
+      name = (X509_NAME *)X509_get_subject_name(x509);
     } else {
-      name = X509_get_issuer_name(x509);
+      name = (X509_NAME *)X509_get_issuer_name(x509);
     }
 
     /* this is prefered over X509_NAME_oneline() */
@@ -507,7 +507,7 @@ accessor(x509)
     X509_PUBKEY *pkey;
     ASN1_OBJECT *ppkalg;
 
-    pkey = X509_get_X509_PUBKEY(x509);
+    pkey = (X509_PUBKEY *)X509_get_X509_PUBKEY(x509);
     X509_PUBKEY_get0_param(&ppkalg, NULL, NULL, NULL, pkey);
 
     i2a_ASN1_OBJECT(bio, ppkalg);
@@ -530,9 +530,9 @@ subject_name(x509)
 
   CODE:
   if (ix == 1) {
-    RETVAL = X509_get_subject_name(x509);
+    RETVAL = (X509_NAME *)X509_get_subject_name(x509);
   } else {
-    RETVAL = X509_get_issuer_name(x509);
+    RETVAL = (X509_NAME *)X509_get_issuer_name(x509);
   }
 
   OUTPUT:
@@ -1011,7 +1011,7 @@ extension(x509, i)
   } else if (i >= c || i < 0) {
     croak("Requested extension index out of range\n");
   } else {
-    ext = X509_get_ext(x509, i);
+    ext = (X509_EXTENSION *)X509_get_ext(x509, i);
   }
 
   if (ext == NULL) {
@@ -1066,7 +1066,7 @@ object(ext)
     croak("No extension supplied\n");
   }
 
-  RETVAL = X509_EXTENSION_get_object(ext);
+  RETVAL = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
 
   OUTPUT:
   RETVAL
@@ -1186,7 +1186,7 @@ bit_string(ext)
   CODE:
   bio = sv_bio_create();
 
-  object = X509_EXTENSION_get_object(ext);
+  object = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
   nid = OBJ_obj2nid(object);
   bit_str = X509V3_EXT_d2i(ext);
 
@@ -1267,7 +1267,7 @@ keyid_data(ext)
   CODE:
 
   bio    = sv_bio_create();
-  object = X509_EXTENSION_get_object(ext);
+  object = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
   nid    = OBJ_obj2nid(object);
 
   if (nid == NID_authority_key_identifier) {
@@ -1379,7 +1379,7 @@ entries(name)
   c = X509_NAME_entry_count(name);
 
   for (i = 0; i < c; i++) {
-    rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)X509_NAME_get_entry(name, i));
+    rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)(X509_NAME_ENTRY *)X509_NAME_get_entry(name, i));
     av_push(RETVAL, rv);
   }
 
@@ -1452,7 +1452,7 @@ get_entry_by_type(name, type, lastpos = -1)
   }
 
   i = X509_NAME_get_index_by_NID(name, nid, lastpos);
-  RETVAL = X509_NAME_get_entry(name, i);
+  RETVAL = (X509_NAME_ENTRY *)X509_NAME_get_entry(name, i);
 
   OUTPUT:
   RETVAL
@@ -1655,7 +1655,7 @@ CRL_accessor(crl)
   bio = sv_bio_create();
 
   if (ix == 1) {
-    name = X509_CRL_get_issuer(crl);
+    name = (X509_NAME *)X509_CRL_get_issuer(crl);
     sv_bio_utf8_on(bio);
     X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
 
