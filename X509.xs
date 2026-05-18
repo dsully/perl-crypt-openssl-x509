@@ -261,6 +261,7 @@ static HV* hv_exts(X509* x509, int no_name) {
   int i, c, r;
   size_t len = 128;
   char* key = NULL;
+  const char* ckey = NULL;
   SV* rv;
 
   HV* RETVAL = newHV();
@@ -273,6 +274,7 @@ static HV* hv_exts(X509* x509, int no_name) {
 
   for (i = 0; i < c; i++) {
     r = 0;
+    ckey = NULL;
 
     ext = X509_get_ext(x509, i);
 
@@ -284,14 +286,15 @@ static HV* hv_exts(X509* x509, int no_name) {
 
        key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
        r = OBJ_obj2txt(key, len, X509_EXTENSION_get_object(ext), no_name);
+       ckey = key;
 
     } else if (no_name == 2) {
 
-       key = (char*)OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
-       r = strlen(key);
+       ckey = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+       r = strlen(ckey);
     }
 
-    if (! hv_store(RETVAL, key, r, rv, 0) ) croak("Error storing extension in hash\n");
+    if (! hv_store(RETVAL, ckey, r, rv, 0) ) croak("Error storing extension in hash\n");
   }
 
   return RETVAL;
@@ -305,7 +308,7 @@ BOOT:
 {
   HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
-  struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
+  struct { const char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
 
   {"OPENSSL_VERSION_NUMBER", OPENSSL_VERSION_NUMBER},
   {"FORMAT_UNDEF", FORMAT_UNDEF},
@@ -321,7 +324,7 @@ BOOT:
   {"V_ASN1_IA5STRING",  V_ASN1_IA5STRING},
   {Nullch,0}};
 
-  char *name;
+  const char *name;
   int i;
 
   for (i = 0; (name = Crypt__OpenSSL__X509__const[i].n); i++) {
@@ -951,7 +954,7 @@ pubkey(x509)
   OUTPUT:
   RETVAL
 
-char*
+const char*
 pubkey_type(x509)
         Crypt::OpenSSL::X509 x509;
     PREINIT:
@@ -1556,7 +1559,7 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
   OUTPUT:
   RETVAL
 
-char*
+const char*
 encoding(name_entry)
   Crypt::OpenSSL::X509::Name_Entry name_entry;
 
