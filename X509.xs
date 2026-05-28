@@ -261,6 +261,7 @@ static HV* hv_exts(X509* x509, int no_name) {
   int i, c, r;
   size_t len = 128;
   char* key = NULL;
+  const char* ckey = NULL;
   SV* rv;
 
   HV* RETVAL = newHV();
@@ -273,8 +274,9 @@ static HV* hv_exts(X509* x509, int no_name) {
 
   for (i = 0; i < c; i++) {
     r = 0;
+    ckey = NULL;
 
-    ext = X509_get_ext(x509, i);
+    ext = (X509_EXTENSION *)X509_get_ext(x509, i);
 
     if (ext == NULL) croak("Extension %d unavailable\n", i);
 
@@ -284,14 +286,15 @@ static HV* hv_exts(X509* x509, int no_name) {
 
        key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
        r = OBJ_obj2txt(key, len, X509_EXTENSION_get_object(ext), no_name);
+       ckey = key;
 
     } else if (no_name == 2) {
 
-       key = (char*)OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
-       r = strlen(key);
+       ckey = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+       r = strlen(ckey);
     }
 
-    if (! hv_store(RETVAL, key, r, rv, 0) ) croak("Error storing extension in hash\n");
+    if (! hv_store(RETVAL, ckey, r, rv, 0) ) croak("Error storing extension in hash\n");
   }
 
   return RETVAL;
@@ -305,7 +308,7 @@ BOOT:
 {
   HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
-  struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
+  struct { const char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
 
   {"OPENSSL_VERSION_NUMBER", OPENSSL_VERSION_NUMBER},
   {"FORMAT_UNDEF", FORMAT_UNDEF},
@@ -321,7 +324,7 @@ BOOT:
   {"V_ASN1_IA5STRING",  V_ASN1_IA5STRING},
   {Nullch,0}};
 
-  char *name;
+  const char *name;
   int i;
 
   for (i = 0; (name = Crypt__OpenSSL__X509__const[i].n); i++) {
@@ -445,9 +448,9 @@ accessor(x509)
   if (ix == 1 || ix == 2) {
 
     if (ix == 1) {
-      name = X509_get_subject_name(x509);
+      name = (X509_NAME *)X509_get_subject_name(x509);
     } else {
-      name = X509_get_issuer_name(x509);
+      name = (X509_NAME *)X509_get_issuer_name(x509);
     }
 
     /* this is prefered over X509_NAME_oneline() */
@@ -504,7 +507,7 @@ accessor(x509)
     X509_PUBKEY *pkey;
     ASN1_OBJECT *ppkalg;
 
-    pkey = X509_get_X509_PUBKEY(x509);
+    pkey = (X509_PUBKEY *)X509_get_X509_PUBKEY(x509);
     X509_PUBKEY_get0_param(&ppkalg, NULL, NULL, NULL, pkey);
 
     i2a_ASN1_OBJECT(bio, ppkalg);
@@ -527,9 +530,9 @@ subject_name(x509)
 
   CODE:
   if (ix == 1) {
-    RETVAL = X509_get_subject_name(x509);
+    RETVAL = (X509_NAME *)X509_get_subject_name(x509);
   } else {
-    RETVAL = X509_get_issuer_name(x509);
+    RETVAL = (X509_NAME *)X509_get_issuer_name(x509);
   }
 
   OUTPUT:
@@ -951,7 +954,7 @@ pubkey(x509)
   OUTPUT:
   RETVAL
 
-char*
+const char*
 pubkey_type(x509)
         Crypt::OpenSSL::X509 x509;
     PREINIT:
@@ -1008,7 +1011,7 @@ extension(x509, i)
   } else if (i >= c || i < 0) {
     croak("Requested extension index out of range\n");
   } else {
-    ext = X509_get_ext(x509, i);
+    ext = (X509_EXTENSION *)X509_get_ext(x509, i);
   }
 
   if (ext == NULL) {
@@ -1063,7 +1066,7 @@ object(ext)
     croak("No extension supplied\n");
   }
 
-  RETVAL = X509_EXTENSION_get_object(ext);
+  RETVAL = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
 
   OUTPUT:
   RETVAL
@@ -1183,7 +1186,7 @@ bit_string(ext)
   CODE:
   bio = sv_bio_create();
 
-  object = X509_EXTENSION_get_object(ext);
+  object = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
   nid = OBJ_obj2nid(object);
   bit_str = X509V3_EXT_d2i(ext);
 
@@ -1264,7 +1267,7 @@ keyid_data(ext)
   CODE:
 
   bio    = sv_bio_create();
-  object = X509_EXTENSION_get_object(ext);
+  object = (ASN1_OBJECT *)X509_EXTENSION_get_object(ext);
   nid    = OBJ_obj2nid(object);
 
   if (nid == NID_authority_key_identifier) {
@@ -1376,7 +1379,7 @@ entries(name)
   c = X509_NAME_entry_count(name);
 
   for (i = 0; i < c; i++) {
-    rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)X509_NAME_get_entry(name, i));
+    rv = sv_make_ref("Crypt::OpenSSL::X509::Name_Entry", (void*)(X509_NAME_ENTRY *)X509_NAME_get_entry(name, i));
     av_push(RETVAL, rv);
   }
 
@@ -1449,7 +1452,7 @@ get_entry_by_type(name, type, lastpos = -1)
   }
 
   i = X509_NAME_get_index_by_NID(name, nid, lastpos);
-  RETVAL = X509_NAME_get_entry(name, i);
+  RETVAL = (X509_NAME_ENTRY *)X509_NAME_get_entry(name, i);
 
   OUTPUT:
   RETVAL
@@ -1556,7 +1559,7 @@ is_printableString(name_entry, asn1_type =  V_ASN1_PRINTABLESTRING)
   OUTPUT:
   RETVAL
 
-char*
+const char*
 encoding(name_entry)
   Crypt::OpenSSL::X509::Name_Entry name_entry;
 
@@ -1652,7 +1655,7 @@ CRL_accessor(crl)
   bio = sv_bio_create();
 
   if (ix == 1) {
-    name = X509_CRL_get_issuer(crl);
+    name = (X509_NAME *)X509_CRL_get_issuer(crl);
     sv_bio_utf8_on(bio);
     X509_NAME_print_ex(bio, name, 0, (XN_FLAG_SEP_CPLUS_SPC | ASN1_STRFLGS_UTF8_CONVERT) & ~ASN1_STRFLGS_ESC_MSB);
 
