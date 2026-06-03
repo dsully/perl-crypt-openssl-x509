@@ -1,14 +1,12 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
-## 2.1.1-TRIAL 2026-05-28
+## 2.1.1 2026-06-03
 
-- Fixed const-correctness warnings reported by @ppisar in follow-up feedback on issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). OpenSSL 1.1.0+ returns const-qualified pointers from several accessor functions; added explicit casts at read-only call sites to resolve `-Wdiscarded-qualifiers` and `-Wincompatible-pointer-types-discards-qualifiers` warnings. Affected functions: `X509_get_ext()`, `X509_get_subject_name()`, `X509_get_issuer_name()`, `X509_get_X509_PUBKEY()`, `X509_EXTENSION_get_object()`, `X509_CRL_get_issuer()`, `X509_NAME_get_entry()`. Contributed by @jonasbn with co-authoring from Claude
+- Applied PR [#126](https://github.com/dsully/perl-crypt-openssl-x509/pull/126) moving `-DOPENSSL_API_COMPAT` from `OPTIMIZE` to `CCFLAGS`. Previously, users could override `OPTIMIZE` (e.g., `perl Makefile.PL OPTIMIZE='-Wdiscarded-qualifiers'`), which silently dropped the `-DOPENSSL_API_COMPAT` define and caused OpenSSL 3.0 deprecation warnings. Now placed in `CCFLAGS` (appended to existing ccflags) to ensure it is always applied regardless of user `OPTIMIZE` settings. Closes issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). Contributed by @jonasbn with co-authoring from Claude
+
+- Applied PR [#125](https://github.com/dsully/perl-crypt-openssl-x509/pull/125) fixing const-correctness warnings reported by @ppisar in follow-up feedback on issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). OpenSSL 1.1.0+ returns const-qualified pointers from several accessor functions; added explicit casts at read-only call sites to resolve `-Wdiscarded-qualifiers` and `-Wincompatible-pointer-types-discards-qualifiers` warnings. Affected functions: `X509_get_ext()`, `X509_get_subject_name()`, `X509_get_issuer_name()`, `X509_get_X509_PUBKEY()`, `X509_EXTENSION_get_object()`, `X509_CRL_get_issuer()`, `X509_NAME_get_entry()`. Contributed by @jonasbn with co-authoring from Claude
 
 - Improved OpenSSL version detection in tests when `OPENSSL_PREFIX` is set. Test suite now reports the version of the OpenSSL library actually being tested (as specified by `scripts/test.sh`) rather than the default PATH binary. Also added warning when `OPENSSL_PREFIX` points to a missing or non-executable binary to avoid silent failures. Contributed by @jonasbn with co-authoring from Claude
-
-- This is a TRIAL release following up on 2.1.0-TRIAL, addressing remaining compiler warnings while maintaining full OpenSSL 1.0.x through 4.x compatibility. Additional trial releases may follow based on CPAN-testers feedback
-
-## 2.1.0-TRIAL 2026-05-16
 
 - Applied PR [#124](https://github.com/dsully/perl-crypt-openssl-x509/pull/124) adding OpenSSL 4.0 compatibility, addressing issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). OpenSSL 4.0.0 made `ASN1_STRING` types opaque, breaking direct struct member access. Conditional compilation (`OPENSSL_VERSION_NUMBER >= 0x40000000L`) now uses accessor functions (`ASN1_STRING_length()`, `ASN1_STRING_get0_data()`, `ASN1_STRING_type()`) for OpenSSL 4.x while maintaining backward compatibility with earlier versions. Fixed functions: `sig_print()`, `ia5string()`, `keyid_data()`, `is_asn1_type()`, `encoding()`. Also fixed a buffer over-read and memory leaks in `ia5string()` and `keyid_data()`. Added `OPENSSL4_TESTING.md` with build and test instructions and `scripts/test.sh` for testing against multiple OpenSSL versions. Contributed by @jonasbn with co-authoring from Copilot and Claude
 
