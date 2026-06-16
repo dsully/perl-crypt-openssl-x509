@@ -1,5 +1,5 @@
 
-use Test::More tests => 59;
+use Test::More tests => 60;
 
 BEGIN { use_ok('Crypt::OpenSSL::X509') };
 
@@ -58,6 +58,8 @@ ok($$exts{'2.5.29.19'}->basicC('ca'), 'basicConstraints CA: TRUE 2.4.1');
 ok($$exts{'2.5.29.19'}->as_string() eq $$exts{'2.5.29.19'}->to_string(), 'as_string is an alias of to_string');
 
 ok($x509_b = Crypt::OpenSSL::X509->new_from_file('certs/balt.pem'), 'new_from_file()');
+ok($x509_b->has_extension_oid('2.5.29.14'), 'has_extension_oid(2.5.29.14)');
+
 ok(my $exts_b = $x509_b->extensions_by_name(), 'extensions_by_name()');
 ok(not($$exts_b{'subjectKeyIdentifier'}->is_critical()), 'subjectKeyIdentifier not critical');
 my $subkeyid = (join ':', map{sprintf '%X', ord($_)} split //, $$exts_b{'subjectKeyIdentifier'}->keyid_data());
