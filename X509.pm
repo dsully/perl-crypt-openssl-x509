@@ -8,7 +8,7 @@ use base qw(Exporter);
 
 use Convert::ASN1;
 
-use version; our $VERSION = version->declare('2.1.1');
+use version; our $VERSION = version->declare('2.1.2');
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -645,6 +645,8 @@ In alphabetical order.
 =item * Jonas Brømsø @jonasbn
 
 =item * Louise Doran
+
+=item * Maxime Besson @maxbes
 
 =item * Michael McClimon @mmcclimon
 

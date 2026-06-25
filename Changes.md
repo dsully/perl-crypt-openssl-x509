@@ -1,5 +1,9 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.2 2026-06-25
+
+- Applied PR [#128](https://github.com/dsully/perl-crypt-openssl-x509/pull/128) from @maxbes (Maxime Besson) fixing `has_extension_oid` returning incorrect results when multiple certificates are instantiated in a single Perl process. The previous implementation stored the extension cache in a package variable, causing it to be shared across all certificate objects. The cache is now held per-instance, so each certificate object maintains its own independent extension list. This is a **bug fix release; update is recommended**. Contributed by @maxbes
+
 ## 2.1.1 2026-06-03
 
 - Applied PR [#126](https://github.com/dsully/perl-crypt-openssl-x509/pull/126) moving `-DOPENSSL_API_COMPAT` from `OPTIMIZE` to `CCFLAGS`. Previously, users could override `OPTIMIZE` (e.g., `perl Makefile.PL OPTIMIZE='-Wdiscarded-qualifiers'`), which silently dropped the `-DOPENSSL_API_COMPAT` define and caused OpenSSL 3.0 deprecation warnings. Now placed in `CCFLAGS` (appended to existing ccflags) to ensure it is always applied regardless of user `OPTIMIZE` settings. Closes issue [#123](https://github.com/dsully/perl-crypt-openssl-x509/issues/123). Contributed by @jonasbn with co-authoring from Claude
