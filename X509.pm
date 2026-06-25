@@ -19,11 +19,7 @@ sub Crypt::OpenSSL::X509::has_extension_oid {
   my $x509 = shift;
   my $oid  = shift;
 
-  if (not $Crypt::OpenSSL::X509::exts_by_oid) {
-      $Crypt::OpenSSL::X509::exts_by_oid = $x509->extensions_by_oid;
-  }
-
-  return $$Crypt::OpenSSL::X509::exts_by_oid{$oid} ? 1 : 0;
+  return ${$x509->extensions_by_oid}{$oid} ? 1 : 0;
 }
 
 sub Crypt::OpenSSL::X509::Extension::is_critical {
