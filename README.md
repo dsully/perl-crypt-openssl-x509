@@ -347,6 +347,7 @@ In alphabetical order.
 - Johanna @0xxon
 - Jonas Brømsø @jonasbn
 - Louise Doran
+- Maxime Besson @maxbes
 - Michael McClimon @mmcclimon
 - Michal Josef Špaček @michal-josef-spacek
 - Neil Bowers @neilb
