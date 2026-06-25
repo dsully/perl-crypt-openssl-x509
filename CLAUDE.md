@@ -76,3 +76,10 @@ GitHub Actions workflows cover: macOS (OpenSSL 1.1), Windows (ActivePerl), Cygwi
 
 - is fully documented with POD in `X509.pm`. Run `perldoc X509.pm`
 - README.md is generated from POD using `dzil build` alternativly `pod2markdown X509.pm > README.md`. Do not edit README.md directly; edit POD in `X509.pm` and regenerate.
+
+## Release Process
+
+- Version string is declared only in `X509.pm` line 11: `version->declare('X.Y.Z')` — no other files to update
+- Changelog is `Changes.md` — prepend a new `## X.Y.Z YYYY-MM-DD` section at the top
+- ACKNOWLEDGEMENTS section in `X509.pm` POD lists contributors alphabetically by first name
+- To get a PR contributor's GitHub handle: `gh pr view <N> --json author,title,body`
