@@ -293,16 +293,20 @@ static HV* hv_exts(X509* x509, int no_name) {
           value -- so no over-read is possible on any code path or any
           OBJ_obj2txt() version. */
        r = OBJ_obj2txt(NULL, 0, X509_EXTENSION_get_object(ext), no_name);
-       if (r < 0) { SvREFCNT_dec(rv); croak("OBJ_obj2txt length query failed for extension %d\n", i); }
+       if (r <= 0) { SvREFCNT_dec(rv); croak("OBJ_obj2txt length query failed for extension %d\n", i); }
        key = malloc(sizeof(char) * ((size_t)r + 1));
        if (key == NULL) { SvREFCNT_dec(rv); croak("malloc failed for extension key\n"); }
-       OBJ_obj2txt(key, r + 1, X509_EXTENSION_get_object(ext), no_name);
+       if (OBJ_obj2txt(key, r + 1, X509_EXTENSION_get_object(ext), no_name) < 0) {
+         free(key); key = NULL; SvREFCNT_dec(rv);
+         croak("OBJ_obj2txt format failed for extension %d\n", i);
+       }
        ckey = key;
        r = (int)strlen(key);
 
     } else if (no_name == 2) {
 
        ckey = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+       if (ckey == NULL) { SvREFCNT_dec(rv); croak("OBJ_nid2sn failed for extension %d\n", i); }
        r = strlen(ckey);
     }
 
@@ -1237,6 +1241,7 @@ bit_string(ext)
         BIO_printf(bio, "%d",  string[i]);
       }
     }
+    ASN1_BIT_STRING_free(bit_str);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -1269,8 +1274,9 @@ extendedKeyUsage(ext)
       nid = OBJ_obj2nid(obj);
       ASN1_OBJECT_free(obj);
       value = OBJ_nid2sn(nid);
-      BIO_printf(bio, "%s", value);
-      BIO_printf(bio, " ");
+      if (value != NULL) {
+        BIO_printf(bio, "%s ", value);
+      }
     }
     sk_ASN1_OBJECT_free(extku);
   }
