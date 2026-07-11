@@ -1152,6 +1152,12 @@ basicC(ext, value)
   /* retrieve the value of CA or pathlen in basicConstraints */
   bs = X509V3_EXT_d2i(ext);
 
+  /* X509V3_EXT_d2i() returns NULL when the extension's DER fails to parse.
+     basicC() feeds a security decision (callers test CA / pathLenConstraint),
+     so a malformed extension must be rejected rather than silently treated
+     as ca=0 / pathlen=0. Croak instead of dereferencing NULL. */
+  if (bs == NULL) croak("Error parsing basicConstraints extension\n");
+
   if (strcmp(value, "ca") == 0) {
     ret = bs->ca ? 1 : 0;
 
@@ -1179,13 +1185,17 @@ ia5string(ext)
   /* retrieving the value of an ia5string object */
   bio = sv_bio_create();
   str = X509V3_EXT_d2i(ext);
+  /* X509V3_EXT_d2i() returns NULL on a malformed extension; guard the
+     dereference and return an empty string rather than crashing. */
+  if (str != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-  BIO_write(bio, ASN1_STRING_get0_data((ASN1_STRING *)str),
-                 ASN1_STRING_length((ASN1_STRING *)str));
+    BIO_write(bio, ASN1_STRING_get0_data((ASN1_STRING *)str),
+                   ASN1_STRING_length((ASN1_STRING *)str));
 #else
-  BIO_write(bio, str->data, str->length);
+    BIO_write(bio, str->data, str->length);
 #endif
-  ASN1_IA5STRING_free(str);
+    ASN1_IA5STRING_free(str);
+  }
 
   RETVAL = sv_bio_final(bio);
 
@@ -1267,7 +1277,11 @@ auth_att(ext)
   CODE:
 
   akid   = X509V3_EXT_d2i(ext);
-  RETVAL = akid->keyid ? 1 : 0;
+  /* akid is NULL on a malformed extension, and a well-formed AUTHORITY_KEYID
+     may legitimately have a NULL optional keyid field -- both must not be
+     dereferenced. Also free akid, which the original code leaked. */
+  RETVAL = (akid != NULL && akid->keyid != NULL) ? 1 : 0;
+  if (akid != NULL) AUTHORITY_KEYID_free(akid);
 
   OUTPUT:
   RETVAL
@@ -1293,28 +1307,38 @@ keyid_data(ext)
   if (nid == NID_authority_key_identifier) {
 
     akid = X509V3_EXT_d2i(ext);
+    /* akid is NULL on a malformed AKI; akid->keyid is an optional field that
+       is legitimately NULL (e.g. an AKI carrying only issuer/serial). Guard
+       both before dereferencing -- otherwise either is a NULL-deref crash. */
+    if (akid != NULL) {
+      if (akid->keyid != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    p   = ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid);
-    len = ASN1_STRING_length((ASN1_STRING *)akid->keyid);
+        p   = ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid);
+        len = ASN1_STRING_length((ASN1_STRING *)akid->keyid);
 #else
-    p   = akid->keyid->data;
-    len = akid->keyid->length;
+        p   = akid->keyid->data;
+        len = akid->keyid->length;
 #endif
-    BIO_write(bio, p, len);
-    AUTHORITY_KEYID_free(akid);
+        BIO_write(bio, p, len);
+      }
+      AUTHORITY_KEYID_free(akid);
+    }
 
   } else if (nid == NID_subject_key_identifier) {
 
     skid = X509V3_EXT_d2i(ext);
+    /* skid is NULL on a malformed subjectKeyIdentifier; guard the deref. */
+    if (skid != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    p   = ASN1_STRING_get0_data((ASN1_STRING *)skid);
-    len = ASN1_STRING_length((ASN1_STRING *)skid);
+      p   = ASN1_STRING_get0_data((ASN1_STRING *)skid);
+      len = ASN1_STRING_length((ASN1_STRING *)skid);
 #else
-    p   = skid->data;
-    len = skid->length;
+      p   = skid->data;
+      len = skid->length;
 #endif
-    BIO_write(bio, p, len);
-    ASN1_OCTET_STRING_free(skid);
+      BIO_write(bio, p, len);
+      ASN1_OCTET_STRING_free(skid);
+    }
   }
 
   RETVAL = sv_bio_final(bio);
