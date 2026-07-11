@@ -1220,18 +1220,22 @@ bit_string(ext)
   nid = OBJ_obj2nid(object);
   bit_str = X509V3_EXT_d2i(ext);
 
-  if (nid == NID_key_usage) {
+  /* ASN1_BIT_STRING_get_bit() is NULL-tolerant (returns 0 for NULL), so
+     this guard is defence-in-depth rather than a crash fix. */
+  if (bit_str != NULL) {
+    if (nid == NID_key_usage) {
 
-    for (i = 0; i < 9; i++) {
-      string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-      BIO_printf(bio, "%d", string[i]);
-    }
+      for (i = 0; i < 9; i++) {
+        string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+        BIO_printf(bio, "%d", string[i]);
+      }
 
-  } else if (nid == NID_netscape_cert_type) {
+    } else if (nid == NID_netscape_cert_type) {
 
-    for (i = 0; i < 8; i++) {
-      string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-      BIO_printf(bio, "%d",  string[i]);
+      for (i = 0; i < 8; i++) {
+        string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+        BIO_printf(bio, "%d",  string[i]);
+      }
     }
   }
 
@@ -1255,11 +1259,20 @@ extendedKeyUsage(ext)
   bio   = sv_bio_create();
   extku = (STACK_OF(ASN1_OBJECT)*) X509V3_EXT_d2i(ext);
 
-  while(sk_ASN1_OBJECT_num(extku) > 0) {
-    nid = OBJ_obj2nid(sk_ASN1_OBJECT_pop(extku));
-    value = OBJ_nid2sn(nid);
-    BIO_printf(bio, "%s", value);
-    BIO_printf(bio, " ");
+  /* OPENSSL_sk_num(NULL) returns -1 so the loop body never runs on NULL
+     extku -- this guard is defence-in-depth. The real fix here is freeing
+     both the popped ASN1_OBJECTs and the stack container, which the
+     original code leaked on every call. */
+  if (extku != NULL) {
+    ASN1_OBJECT *obj;
+    while((obj = sk_ASN1_OBJECT_pop(extku)) != NULL) {
+      nid = OBJ_obj2nid(obj);
+      ASN1_OBJECT_free(obj);
+      value = OBJ_nid2sn(nid);
+      BIO_printf(bio, "%s", value);
+      BIO_printf(bio, " ");
+    }
+    sk_ASN1_OBJECT_free(extku);
   }
 
   RETVAL = sv_bio_final(bio);
