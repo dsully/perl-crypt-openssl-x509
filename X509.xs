@@ -259,7 +259,6 @@ static SV* sv_make_ref(const char* class, void* object) {
 static HV* hv_exts(X509* x509, int no_name) {
   X509_EXTENSION *ext;
   int i, c, r;
-  size_t len = 128;
   char* key = NULL;
   const char* ckey = NULL;
   SV* rv;
@@ -284,9 +283,22 @@ static HV* hv_exts(X509* x509, int no_name) {
 
     if (no_name == 0 || no_name == 1) {
 
-       key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
-       r = OBJ_obj2txt(key, len, X509_EXTENSION_get_object(ext), no_name);
+       /* OBJ_obj2txt() returns the FULL textual length the OID needs, not
+          the number of bytes written into the buffer. The original code
+          passed a fixed 128-byte buffer and handed that return value to
+          hv_store() as the key length, so an OID longer than 128 bytes made
+          hv_store() read past the allocation (heap OOB read). Size the
+          buffer to the required length first, then format, and store the
+          number of bytes actually written (strlen) -- never the return
+          value -- so no over-read is possible on any code path or any
+          OBJ_obj2txt() version. */
+       r = OBJ_obj2txt(NULL, 0, X509_EXTENSION_get_object(ext), no_name);
+       if (r < 0) { SvREFCNT_dec(rv); croak("OBJ_obj2txt length query failed for extension %d\n", i); }
+       key = malloc(sizeof(char) * ((size_t)r + 1));
+       if (key == NULL) { SvREFCNT_dec(rv); croak("malloc failed for extension key\n"); }
+       OBJ_obj2txt(key, r + 1, X509_EXTENSION_get_object(ext), no_name);
        ckey = key;
+       r = (int)strlen(key);
 
     } else if (no_name == 2) {
 
@@ -294,7 +306,15 @@ static HV* hv_exts(X509* x509, int no_name) {
        r = strlen(ckey);
     }
 
-    if (! hv_store(RETVAL, ckey, r, rv, 0) ) croak("Error storing extension in hash\n");
+    /* hv_store() copies the key bytes, so the per-iteration key buffer can be
+       freed immediately. Free it BEFORE the failure croak so it is not leaked
+       on longjmp; on hv_store() failure the hash did not adopt rv, so drop
+       our reference too. */
+    {
+        SV** stored = hv_store(RETVAL, ckey, r, rv, 0);
+        if (key != NULL) { free(key); key = NULL; }
+        if (stored == NULL) { SvREFCNT_dec(rv); croak("Error storing extension in hash\n"); }
+    }
   }
 
   return RETVAL;
