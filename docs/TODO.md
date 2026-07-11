@@ -44,3 +44,17 @@ sub Crypt::OpenSSL::X509::has_extension_oid {
 Neither test for `has_extension_oid` uses a cert with zero extensions, so the croak in
 item 1 goes undetected by CI. A test using a minimal cert (or mocking
 `extensions_by_oid` to croak) should be added alongside the fix for item 1.
+
+---
+
+## Follow-up from CVE-2026-58101 fix
+
+### 4. `extendedKeyUsage` leaks the STACK_OF(ASN1_OBJECT) container
+
+`extendedKeyUsage()` in `X509.xs` (~line 1236) drains the stack with `sk_ASN1_OBJECT_pop`
+inside the NULL guard added for CVE-2026-58101, but never calls `sk_ASN1_OBJECT_free()` on
+the container after the loop. The elements are popped (and their memory freed by
+`sk_ASN1_OBJECT_pop` → `ASN1_OBJECT_free`), but the `STACK_OF` header itself leaks.
+
+Fix: add `sk_ASN1_OBJECT_free(extku);` after the while loop, inside the `if (extku != NULL)`
+block.
