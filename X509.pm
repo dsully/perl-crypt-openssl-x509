@@ -8,7 +8,7 @@ use base qw(Exporter);
 
 use Convert::ASN1;
 
-use version; our $VERSION = version->declare('2.1.2');
+use version; our $VERSION = version->declare('2.1.3');
 
 our @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM
@@ -487,6 +487,34 @@ Return the value of the extension as an asn1parse(1) style hex dump.
 =item as_string ( )
 
 Return a human-readable version of the extension as formatted by X509V3_EXT_print. Note that this will return an empty string for OIDs with unknown ASN.1 encodings.
+
+=item basicC ( TYPE )
+
+Return the value of a basicConstraints field. C<TYPE> must be C<"ca"> (returns 1 if the certificate is a CA, 0 otherwise) or C<"pathlen"> (returns the path length constraint, or 0 if absent).
+
+B<Throws> if the basicConstraints extension DER cannot be parsed. Callers that process certificates from untrusted sources should wrap this call in C<eval {}>:
+
+    my $is_ca = eval { $ext->basicC('ca') } // 0;
+
+=item ia5string ( )
+
+Return the value of an IA5String extension (e.g. C<nsComment>) as a string. Returns an empty string if the extension DER cannot be parsed.
+
+=item bit_string ( )
+
+Return the bit-string value of a key usage or Netscape certificate type extension as a string of C<0>/C<1> characters. Returns an empty string if the extension DER cannot be parsed.
+
+=item auth_att ( )
+
+Return 1 if the Authority Key Identifier extension contains a keyIdentifier field, 0 otherwise. Returns 0 if the extension DER cannot be parsed.
+
+=item keyid_data ( )
+
+Return the key identifier octets from a subjectKeyIdentifier or authorityKeyIdentifier extension as a binary string. Returns an empty string if the extension DER cannot be parsed or if the optional keyIdentifier field is absent.
+
+=item extendedKeyUsage ( )
+
+Return the extended key usage OIDs as a space-separated string of short names (e.g. C<"serverAuth clientAuth">). OIDs with no registered short name are silently omitted. Returns an empty string if the extension DER cannot be parsed.
 
 =back
 

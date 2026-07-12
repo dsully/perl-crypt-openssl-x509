@@ -1,5 +1,17 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.3 2026-07-12
+
+- Fixed CVE-2026-58102: heap out-of-bounds read in `hv_exts()`. The function allocated a fixed 128-byte buffer for an extension's OID string but used `OBJ_obj2txt()`'s return value (the full required length, not the number of bytes actually written) as the key length passed to `hv_store()`. A certificate with an extension whose OID stringifies to more than 128 bytes caused a heap over-read. Fixed with a two-phase `OBJ_obj2txt()` call (probe the required length, allocate exactly, then format) and by using `strlen(key)` rather than the `OBJ_obj2txt()` return value for the `hv_store()` key length. This is a **security fix; update is strongly recommended**
+
+- Fixed CVE-2026-58101: NULL-pointer dereference in several `Crypt::OpenSSL::X509::Extension` helpers. `X509V3_EXT_d2i()` returns `NULL` when an extension's DER payload fails to parse, and the `AUTHORITY_KEYID` `keyid` field is legitimately `NULL` for Authority Key Identifiers that carry only issuer/serial. `basicC()`, `ia5string()`, `auth_att()`, and `keyid_data()` dereferenced these values unconditionally, allowing an attacker-supplied certificate to crash any process that parsed it. All four helpers now guard against `NULL`; `basicC()` croaks on unparseable DER (since it feeds a CA/pathLen security decision), the others fall back to safe empty values. This is a **security fix; update is strongly recommended**
+
+- Hardened `bit_string()` and `extendedKeyUsage()` with the same defence-in-depth `NULL` guards as the CVE-2026-58101 fix, for consistency across all extension helpers, even though the underlying OpenSSL calls were already `NULL`-tolerant
+
+- Fixed several memory leaks and undefined-behaviour issues found during review of the above fixes: `auth_att()` no longer leaks the `AUTHORITY_KEYID` on every call; `extendedKeyUsage()` no longer leaks the popped `ASN1_OBJECT`s or the `STACK_OF(ASN1_OBJECT)` container, and now guards `OBJ_nid2sn()`'s result (which can be `NULL` for unregistered NIDs) before passing it to `BIO_printf()`'s `%s` format; `bit_string()` no longer leaks the `ASN1_BIT_STRING` returned by `X509V3_EXT_d2i()`; `hv_exts()` now rejects empty OIDs and checks the return value of its second `OBJ_obj2txt()` call rather than assuming success
+
+- Documented `basicC()`, `ia5string()`, `bit_string()`, `auth_att()`, `keyid_data()`, and `extendedKeyUsage()` in the `Crypt::OpenSSL::X509::Extension` POD, explicitly noting that `basicC()` throws on malformed DER so callers should wrap it in `eval {}`
+
 ## 2.1.2 2026-06-25
 
 - Applied PR [#128](https://github.com/dsully/perl-crypt-openssl-x509/pull/128) from @maxbes (Maxime Besson) fixing `has_extension_oid` returning incorrect results when multiple certificates are instantiated in a single Perl process. The previous implementation stored the extension cache in a package variable, causing it to be shared across all certificate objects. The cache is now held per-instance, so each certificate object maintains its own independent extension list. This is a **bug fix release; update is recommended**. Contributed by @maxbes

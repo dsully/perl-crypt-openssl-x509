@@ -259,7 +259,6 @@ static SV* sv_make_ref(const char* class, void* object) {
 static HV* hv_exts(X509* x509, int no_name) {
   X509_EXTENSION *ext;
   int i, c, r;
-  size_t len = 128;
   char* key = NULL;
   const char* ckey = NULL;
   SV* rv;
@@ -284,17 +283,49 @@ static HV* hv_exts(X509* x509, int no_name) {
 
     if (no_name == 0 || no_name == 1) {
 
-       key = malloc(sizeof(char) * (len + 1)); /*FIXME will it leak?*/
-       r = OBJ_obj2txt(key, len, X509_EXTENSION_get_object(ext), no_name);
+       /* OBJ_obj2txt() returns the FULL textual length the OID needs, not
+          the number of bytes written into the buffer. The original code
+          passed a fixed 128-byte buffer and handed that return value to
+          hv_store() as the key length, so an OID longer than 128 bytes made
+          hv_store() read past the allocation (heap OOB read). Size the
+          buffer to the required length first, then format, and store the
+          number of bytes actually written (strlen) -- never the return
+          value -- so no over-read is possible on any code path or any
+          OBJ_obj2txt() version. */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+       r = OBJ_obj2txt(NULL, 0, X509_EXTENSION_get_object(ext), no_name);
+#else
+       {
+         char tmp[1];
+         r = OBJ_obj2txt(tmp, sizeof(tmp), X509_EXTENSION_get_object(ext), no_name);
+       }
+#endif
+       if (r <= 0) { SvREFCNT_dec(rv); croak("OBJ_obj2txt length query failed for extension %d\n", i); }
+       key = malloc(sizeof(char) * ((size_t)r + 1));
+       if (key == NULL) { SvREFCNT_dec(rv); croak("malloc failed for extension key\n"); }
+       if (OBJ_obj2txt(key, r + 1, X509_EXTENSION_get_object(ext), no_name) < 0) {
+         free(key); key = NULL; SvREFCNT_dec(rv);
+         croak("OBJ_obj2txt format failed for extension %d\n", i);
+       }
        ckey = key;
+       r = (int)strlen(key);
 
     } else if (no_name == 2) {
 
        ckey = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+       if (ckey == NULL) { SvREFCNT_dec(rv); croak("OBJ_nid2sn failed for extension %d\n", i); }
        r = strlen(ckey);
     }
 
-    if (! hv_store(RETVAL, ckey, r, rv, 0) ) croak("Error storing extension in hash\n");
+    /* hv_store() copies the key bytes, so the per-iteration key buffer can be
+       freed immediately. Free it BEFORE the failure croak so it is not leaked
+       on longjmp; on hv_store() failure the hash did not adopt rv, so drop
+       our reference too. */
+    {
+        SV** stored = hv_store(RETVAL, ckey, r, rv, 0);
+        if (key != NULL) { free(key); key = NULL; }
+        if (stored == NULL) { SvREFCNT_dec(rv); croak("Error storing extension in hash\n"); }
+    }
   }
 
   return RETVAL;
@@ -1132,6 +1163,12 @@ basicC(ext, value)
   /* retrieve the value of CA or pathlen in basicConstraints */
   bs = X509V3_EXT_d2i(ext);
 
+  /* X509V3_EXT_d2i() returns NULL when the extension's DER fails to parse.
+     basicC() feeds a security decision (callers test CA / pathLenConstraint),
+     so a malformed extension must be rejected rather than silently treated
+     as ca=0 / pathlen=0. Croak instead of dereferencing NULL. */
+  if (bs == NULL) croak("Error parsing basicConstraints extension\n");
+
   if (strcmp(value, "ca") == 0) {
     ret = bs->ca ? 1 : 0;
 
@@ -1159,13 +1196,17 @@ ia5string(ext)
   /* retrieving the value of an ia5string object */
   bio = sv_bio_create();
   str = X509V3_EXT_d2i(ext);
+  /* X509V3_EXT_d2i() returns NULL on a malformed extension; guard the
+     dereference and return an empty string rather than crashing. */
+  if (str != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-  BIO_write(bio, ASN1_STRING_get0_data((ASN1_STRING *)str),
-                 ASN1_STRING_length((ASN1_STRING *)str));
+    BIO_write(bio, ASN1_STRING_get0_data((ASN1_STRING *)str),
+                   ASN1_STRING_length((ASN1_STRING *)str));
 #else
-  BIO_write(bio, str->data, str->length);
+    BIO_write(bio, str->data, str->length);
 #endif
-  ASN1_IA5STRING_free(str);
+    ASN1_IA5STRING_free(str);
+  }
 
   RETVAL = sv_bio_final(bio);
 
@@ -1190,19 +1231,24 @@ bit_string(ext)
   nid = OBJ_obj2nid(object);
   bit_str = X509V3_EXT_d2i(ext);
 
-  if (nid == NID_key_usage) {
+  /* ASN1_BIT_STRING_get_bit() is NULL-tolerant (returns 0 for NULL), so
+     this guard is defence-in-depth rather than a crash fix. */
+  if (bit_str != NULL) {
+    if (nid == NID_key_usage) {
 
-    for (i = 0; i < 9; i++) {
-      string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-      BIO_printf(bio, "%d", string[i]);
+      for (i = 0; i < 9; i++) {
+        string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+        BIO_printf(bio, "%d", string[i]);
+      }
+
+    } else if (nid == NID_netscape_cert_type) {
+
+      for (i = 0; i < 8; i++) {
+        string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
+        BIO_printf(bio, "%d",  string[i]);
+      }
     }
-
-  } else if (nid == NID_netscape_cert_type) {
-
-    for (i = 0; i < 8; i++) {
-      string[i] = (int)ASN1_BIT_STRING_get_bit(bit_str, i);
-      BIO_printf(bio, "%d",  string[i]);
-    }
+    ASN1_BIT_STRING_free(bit_str);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -1225,11 +1271,21 @@ extendedKeyUsage(ext)
   bio   = sv_bio_create();
   extku = (STACK_OF(ASN1_OBJECT)*) X509V3_EXT_d2i(ext);
 
-  while(sk_ASN1_OBJECT_num(extku) > 0) {
-    nid = OBJ_obj2nid(sk_ASN1_OBJECT_pop(extku));
-    value = OBJ_nid2sn(nid);
-    BIO_printf(bio, "%s", value);
-    BIO_printf(bio, " ");
+  /* OPENSSL_sk_num(NULL) returns -1 so the loop body never runs on NULL
+     extku -- this guard is defence-in-depth. The real fix here is freeing
+     both the popped ASN1_OBJECTs and the stack container, which the
+     original code leaked on every call. */
+  if (extku != NULL) {
+    ASN1_OBJECT *obj;
+    while((obj = sk_ASN1_OBJECT_pop(extku)) != NULL) {
+      nid = OBJ_obj2nid(obj);
+      ASN1_OBJECT_free(obj);
+      value = OBJ_nid2sn(nid);
+      if (value != NULL) {
+        BIO_printf(bio, "%s ", value);
+      }
+    }
+    sk_ASN1_OBJECT_free(extku);
   }
 
   RETVAL = sv_bio_final(bio);
@@ -1247,7 +1303,11 @@ auth_att(ext)
   CODE:
 
   akid   = X509V3_EXT_d2i(ext);
-  RETVAL = akid->keyid ? 1 : 0;
+  /* akid is NULL on a malformed extension, and a well-formed AUTHORITY_KEYID
+     may legitimately have a NULL optional keyid field -- both must not be
+     dereferenced. Also free akid, which the original code leaked. */
+  RETVAL = (akid != NULL && akid->keyid != NULL) ? 1 : 0;
+  if (akid != NULL) AUTHORITY_KEYID_free(akid);
 
   OUTPUT:
   RETVAL
@@ -1273,28 +1333,38 @@ keyid_data(ext)
   if (nid == NID_authority_key_identifier) {
 
     akid = X509V3_EXT_d2i(ext);
+    /* akid is NULL on a malformed AKI; akid->keyid is an optional field that
+       is legitimately NULL (e.g. an AKI carrying only issuer/serial). Guard
+       both before dereferencing -- otherwise either is a NULL-deref crash. */
+    if (akid != NULL) {
+      if (akid->keyid != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    p   = ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid);
-    len = ASN1_STRING_length((ASN1_STRING *)akid->keyid);
+        p   = ASN1_STRING_get0_data((ASN1_STRING *)akid->keyid);
+        len = ASN1_STRING_length((ASN1_STRING *)akid->keyid);
 #else
-    p   = akid->keyid->data;
-    len = akid->keyid->length;
+        p   = akid->keyid->data;
+        len = akid->keyid->length;
 #endif
-    BIO_write(bio, p, len);
-    AUTHORITY_KEYID_free(akid);
+        BIO_write(bio, p, len);
+      }
+      AUTHORITY_KEYID_free(akid);
+    }
 
   } else if (nid == NID_subject_key_identifier) {
 
     skid = X509V3_EXT_d2i(ext);
+    /* skid is NULL on a malformed subjectKeyIdentifier; guard the deref. */
+    if (skid != NULL) {
 #if OPENSSL_VERSION_NUMBER >= 0x40000000L
-    p   = ASN1_STRING_get0_data((ASN1_STRING *)skid);
-    len = ASN1_STRING_length((ASN1_STRING *)skid);
+      p   = ASN1_STRING_get0_data((ASN1_STRING *)skid);
+      len = ASN1_STRING_length((ASN1_STRING *)skid);
 #else
-    p   = skid->data;
-    len = skid->length;
+      p   = skid->data;
+      len = skid->length;
 #endif
-    BIO_write(bio, p, len);
-    ASN1_OCTET_STRING_free(skid);
+      BIO_write(bio, p, len);
+      ASN1_OCTET_STRING_free(skid);
+    }
   }
 
   RETVAL = sv_bio_final(bio);
