@@ -248,6 +248,34 @@ On request:
 
     Return a human-readable version of the extension as formatted by X509V3\_EXT\_print. Note that this will return an empty string for OIDs with unknown ASN.1 encodings.
 
+- basicC ( TYPE )
+
+    Return the value of a basicConstraints field. `TYPE` must be `"ca"` (returns 1 if the certificate is a CA, 0 otherwise) or `"pathlen"` (returns the path length constraint, or 0 if absent).
+
+    **Throws** if the basicConstraints extension DER cannot be parsed. Callers that process certificates from untrusted sources should wrap this call in `eval {}`:
+
+        my $is_ca = eval { $ext->basicC('ca') } // 0;
+
+- ia5string ( )
+
+    Return the value of an IA5String extension (e.g. `nsComment`) as a string. Returns an empty string if the extension DER cannot be parsed.
+
+- bit\_string ( )
+
+    Return the bit-string value of a key usage or Netscape certificate type extension as a string of `0`/`1` characters. Returns an empty string if the extension DER cannot be parsed.
+
+- auth\_att ( )
+
+    Return 1 if the Authority Key Identifier extension contains a keyIdentifier field, 0 otherwise. Returns 0 if the extension DER cannot be parsed.
+
+- keyid\_data ( )
+
+    Return the key identifier octets from a subjectKeyIdentifier or authorityKeyIdentifier extension as a binary string. Returns an empty string if the extension DER cannot be parsed or if the optional keyIdentifier field is absent.
+
+- extendedKeyUsage ( )
+
+    Return the extended key usage OIDs as a space-separated string of short names (e.g. `"serverAuth clientAuth"`). OIDs with no registered short name are silently omitted. Returns an empty string if the extension DER cannot be parsed.
+
 ## X509::ObjectID METHODS
 
 - name ( )
