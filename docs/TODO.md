@@ -58,3 +58,51 @@ the container after the loop. The elements are popped (and their memory freed by
 
 Fix: add `sk_ASN1_OBJECT_free(extku);` after the while loop, inside the `if (extku != NULL)`
 block.
+
+---
+
+## Follow-up from macOS CI OpenSSL version discussion
+
+### 5. `macos-latest.yml` only tests a single OpenSSL version per run
+
+The workflow currently installs one Homebrew OpenSSL formula (`openssl@3`) and points
+`OPENSSL_PREFIX` at it. This matches the pattern used for multi-version testing locally
+(`scripts/test.sh`, `OPENSSL4_TESTING.md`), but CI still only exercises one version per
+push, unlike the local script which loops over 1.1/3.0/3.5/4.x.
+
+Consider converting the `Run Tests` step to a build matrix so PRs are checked against
+multiple OpenSSL versions on macOS, e.g.:
+
+```yaml
+strategy:
+  fail-fast: false
+  matrix:
+    openssl: ["openssl@1.1", "openssl@3"]
+
+steps:
+  - uses: actions/checkout@v4.2.0
+  - name: install dependencies
+    run: |
+      brew install ${{ matrix.openssl }}
+  - name: uses install-with-cpanm
+    uses: perl-actions/install-with-cpanm@v1.7
+    with:
+      cpanfile: "cpanfile"
+      args: "--with-configure"
+      sudo: false
+  - name: perl -V
+    run: perl -V
+  - name: Run Tests
+    run: |
+      export OPENSSL_PREFIX="$(brew --prefix ${{ matrix.openssl }})"
+      export PKG_CONFIG_PATH="$OPENSSL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+      export LDFLAGS="-L$OPENSSL_PREFIX/lib"
+      export CPPFLAGS="-I$OPENSSL_PREFIX/include"
+      export DYLD_LIBRARY_PATH="$OPENSSL_PREFIX/lib:$DYLD_LIBRARY_PATH"
+      perl Makefile.PL
+      make
+      make test
+```
+
+Using `brew --prefix` instead of a hardcoded `/opt/homebrew/opt/...` path also avoids
+breakage on Intel runners (`/usr/local`) vs Apple Silicon runners (`/opt/homebrew`).
