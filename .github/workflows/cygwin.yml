@@ -40,12 +40,12 @@ jobs:
         shell: powershell
 
       - name: Checkout repository
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@0c5b8b7b0f35a493f5b8c2687c5fd204c2628538 # v3.0.1
+        uses: egor-tensin/setup-cygwin@fca9069f92361187d4abfaa5d8a7490e435d8349 # v4.0.2
         with:
           platform: x64
           packages: make perl gcc-core gcc-g++ pkg-config libcrypt-devel libssl-devel git curl
