@@ -292,7 +292,14 @@ static HV* hv_exts(X509* x509, int no_name) {
           number of bytes actually written (strlen) -- never the return
           value -- so no over-read is possible on any code path or any
           OBJ_obj2txt() version. */
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
        r = OBJ_obj2txt(NULL, 0, X509_EXTENSION_get_object(ext), no_name);
+#else
+       {
+         char tmp[1];
+         r = OBJ_obj2txt(tmp, sizeof(tmp), X509_EXTENSION_get_object(ext), no_name);
+       }
+#endif
        if (r <= 0) { SvREFCNT_dec(rv); croak("OBJ_obj2txt length query failed for extension %d\n", i); }
        key = malloc(sizeof(char) * ((size_t)r + 1));
        if (key == NULL) { SvREFCNT_dec(rv); croak("malloc failed for extension key\n"); }
