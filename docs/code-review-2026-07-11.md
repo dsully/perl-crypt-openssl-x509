@@ -4,6 +4,8 @@
 **Effort:** High (8 angles × parallel verify)
 **Scope:** `X509.xs` diff against `master` (3 commits: CVE-2026-58102 hv_exts fix, CVE-2026-58101 extension-helper NULL guards, defence-in-depth + extendedKeyUsage leak fix)
 
+**Status:** The findings below were identified during review of earlier snapshots and have since been addressed in later commits on this branch; keep this document as historical review notes rather than a statement of current defects.
+
 ---
 
 ## CONFIRMED findings
