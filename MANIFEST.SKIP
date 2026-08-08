@@ -20,3 +20,10 @@ cpanfile
 cpanfile.snapshot
 OPENSSL4_TESTING.md
 CLAUDE.md
+
+; Stray review/patch working files (see issue #132) accidentally swept into
+; the 2.1.3 tarball because they were untracked in the working directory
+; when it was built. GatherDir is not git-aware, so guard against them here.
+\.patch$
+^(feedback|patch)-\d+\.md$
+^\d+-review\.md$

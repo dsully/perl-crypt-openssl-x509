@@ -1,5 +1,9 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.4 2026-08-08
+
+- Packaging-only release; no code changes. The 2.1.3 tarball accidentally included several untracked review/patch working files (`680-review.md`, `crypt-openssl-x509-cve-fix.patch`, `feedback-1.md`, `feedback-2.md`, `issue.patch`, `issue2.patch`, `patch-1.md`, `patch-2.md`) left over from the CVE-2026-58101/CVE-2026-58102 review, none of which were ever committed to git. `MANIFEST.SKIP` now excludes this class of file so a clean working directory is no longer required at build time. Closes [#132](https://github.com/dsully/perl-crypt-openssl-x509/issues/132). Reported by @perlpunk
+
 ## 2.1.3 2026-07-12
 
 - Fixed [CVE-2026-58102](https://www.cve.org/CVERecord?id=CVE-2026-58102): heap out-of-bounds read in `hv_exts()`. The function allocated a fixed 128-byte buffer for an extension's OID string but used `OBJ_obj2txt()`'s return value (the full required length, not the number of bytes actually written) as the key length passed to `hv_store()`. A certificate with an extension whose OID stringifies to more than 128 bytes caused a heap over-read. Fixed with a two-phase `OBJ_obj2txt()` call (probe the required length, allocate exactly, then format) and by using `strlen(key)` rather than the `OBJ_obj2txt()` return value for the `hv_store()` key length. This is a **security fix; update is strongly recommended**
