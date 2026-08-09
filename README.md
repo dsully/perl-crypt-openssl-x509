@@ -334,6 +334,35 @@ On request:
 
     Return true if the Name\_Entry value is of the specified type. The value of `ASN1_TYPE` should be as listed in OpenSSL's `asn1.h`.
 
+# DIAGNOSTICS
+
+- **\*\*\* OpenSSL could not be found or linked \*\*\*** (during `perl Makefile.PL`)
+
+    `Makefile.PL` performs a trial compile and link against OpenSSL's headers and
+    libraries (`libssl`/`libcrypto`) using the include and library paths guessed
+    by [Crypt::OpenSSL::Guess](https://metacpan.org/pod/Crypt%3A%3AOpenSSL%3A%3AGuess). If that trial fails, `Makefile.PL` aborts
+    immediately with this message rather than generating a `Makefile` that would
+    later fail during `make` with a wall of "undefined reference" linker errors
+    and no indication that OpenSSL was the cause.
+
+    The diagnostic includes the exact compile/link commands attempted, the
+    captured compiler/linker output, and the include/library flags that were
+    guessed, to help identify why OpenSSL wasn't found.
+
+    **Remedy**: install your OS's OpenSSL development package (e.g. `libssl-dev`
+    on Debian/Ubuntu, `openssl-devel` on RHEL/Fedora, `openssl` via Homebrew on
+    macOS), or point at a specific OpenSSL installation with:
+
+        OPENSSL_PREFIX=/path/to/openssl perl Makefile.PL
+
+    If you are certain OpenSSL is installed correctly and this check is a false
+    positive for your platform, it can be bypassed with:
+
+        PERL_CRYPT_OPENSSL_X509_SKIP_OPENSSL_CHECK=1 perl Makefile.PL
+
+    See [GitHub issue #67](https://github.com/dsully/perl-crypt-openssl-x509/issues/67)
+    for background on the failure mode this check catches.
+
 # ISSUE REPORTING
 
 Please report any bugs or feature requests using **GitHub**.
