@@ -736,7 +736,7 @@ In alphabetical order.
 
 =item * Shoichi Kaji @skaji
 
-=item * Timothy Legge @timlegge 
+=item * Timothy Legge @timlegge
 
 =item * Todd Rinaldo @toddr
 
