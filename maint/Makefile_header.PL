@@ -58,12 +58,11 @@ if ($Config{myuname} =~ /sunos|solaris/i) {
 # Do a throwaway compile+link here so we can fail fast with a clear
 # diagnostic instead.
 unless ($ENV{PERL_CRYPT_OPENSSL_X509_SKIP_OPENSSL_CHECK}) {
+  require ExtUtils::CBuilder;
   require File::Temp;
 
   my $dir = File::Temp::tempdir(CLEANUP => 1);
   my $src = "$dir/openssl_check.c";
-  my $obj = "$dir/openssl_check$Config{obj_ext}";
-  my $exe = "$dir/openssl_check$Config{exe_ext}";
 
   open my $fh, '>', $src or die "Can't write $src: $!";
   print {$fh} <<'C_SRC';
@@ -81,39 +80,41 @@ int main(void) {
 C_SRC
   close $fh;
 
-  my $inc  = $args{INC} || '';
-  my $libs = $args{LIBS}[0] || '';
-  my $cc   = $Config{cc};
-  my $ld   = $Config{ld} || $cc;
+  my $trial_inc  = $args{INC} || '';
+  my $trial_libs = $args{LIBS}[0] || '';
 
-  my $compile_cmd = qq{$cc -c $inc -o "$obj" "$src"};
-  my $link_cmd    = qq{$ld -o "$exe" "$obj" $libs};
+  my $builder = ExtUtils::CBuilder->new(quiet => 1);
 
-  my $log = `$compile_cmd 2>&1`;
-  my $compile_ok = $? == 0 && -e $obj;
+  my @extra_compiler_flags = $builder->split_like_shell(
+    join ' ', grep { defined && length } $trial_inc, $args{CCFLAGS}, $args{OPTIMIZE}
+  );
+  my @extra_linker_flags = $builder->split_like_shell($trial_libs);
 
-  my $link_ok = 0;
-  if ($compile_ok) {
-    $log .= `$link_cmd 2>&1`;
-    $link_ok = $? == 0 && -e $exe;
-  }
+  my $ok = eval {
+    my $obj = $builder->compile(
+      source               => $src,
+      extra_compiler_flags => \@extra_compiler_flags,
+    );
+    $builder->link_executable(
+      objects            => [$obj],
+      extra_linker_flags => \@extra_linker_flags,
+    );
+    1;
+  };
+  my $err = $@ || '(no error captured)';
 
-  unless ($link_ok) {
+  unless ($ok) {
     warn <<"DIAG";
 
 *** OpenSSL could not be found or linked ***
 
 Crypt::OpenSSL::X509 needs OpenSSL's headers and libraries (libssl /
-libcrypto) to build. A trial compile/link against them just failed:
+libcrypto) to build. A trial compile/link against them just failed
+(any compiler/linker output should appear above this message):
 
-  compile: $compile_cmd
-  link:    $link_cmd
-
---- output ---
-$log--------------
-
-Guessed include flags: @{[ $inc  || '(none)' ]}
-Guessed library flags: @{[ $libs || '(none)' ]}
+  $err
+Guessed include flags: @{[ $trial_inc  || '(none)' ]}
+Guessed library flags: @{[ $trial_libs || '(none)' ]}
 
 This usually means OpenSSL's development headers/libraries are not
 installed, or Crypt::OpenSSL::Guess could not find them on this system.
