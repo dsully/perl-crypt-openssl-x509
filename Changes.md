@@ -1,5 +1,9 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.5 2026-08-10
+
+- `Makefile.PL` now fails fast with a clear diagnostic when OpenSSL development files can't be found, instead of proceeding to a `make` that fails hundreds of lines into a wall of "undefined reference" linker errors. `maint/Makefile_header.PL` performs a throwaway compile+link trial against `openssl/x509.h` using the exact `INC`/`LIBS` flags that will be passed to `WriteMakefile`; on failure it aborts with the compile/link commands, captured compiler output, the guessed flags, and remediation steps (`OPENSSL_PREFIX`, OS dev package). An escape hatch (`PERL_CRYPT_OPENSSL_X509_SKIP_OPENSSL_CHECK=1`) is provided for packagers/CI with unusual-but-correct setups. Closes [#67](https://github.com/dsully/perl-crypt-openssl-x509/issues/67). Contributed by @jonasbn with co-authoring from Claude
+
 ## 2.1.4 2026-08-08
 
 - Packaging-only release; no code changes. The 2.1.3 tarball accidentally included several untracked review/patch working files (`680-review.md`, `crypt-openssl-x509-cve-fix.patch`, `feedback-1.md`, `feedback-2.md`, `issue.patch`, `issue2.patch`, `patch-1.md`, `patch-2.md`) left over from the CVE-2026-58101/CVE-2026-58102 review, none of which were ever committed to git. `MANIFEST.SKIP` now excludes this class of file so a clean working directory is no longer required at build time. Closes [#132](https://github.com/dsully/perl-crypt-openssl-x509/issues/132). Reported by @perlpunk
