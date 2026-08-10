@@ -27,3 +27,5 @@ CLAUDE.md
 \.patch$
 ^(feedback|patch)-\d+\.md$
 ^\d+-review\.md$
+^\.superpowers/
+^docs/superpowers/
