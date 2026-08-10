@@ -345,9 +345,10 @@ On request:
     later fail during `make` with a wall of "undefined reference" linker errors
     and no indication that OpenSSL was the cause.
 
-    The diagnostic includes the exact compile/link commands attempted, the
-    captured compiler/linker output, and the include/library flags that were
-    guessed, to help identify why OpenSSL wasn't found.
+    The diagnostic includes the include/library flags that were guessed and any
+    compiler/linker error message captured, to help identify why OpenSSL wasn't
+    found. Raw compiler/linker output (if any) is printed to the terminal
+    immediately before this diagnostic, not repeated within it.
 
     **Remedy**: install your OS's OpenSSL development package (e.g. `libssl-dev`
     on Debian/Ubuntu, `openssl-devel` on RHEL/Fedora, `openssl` via Homebrew on
