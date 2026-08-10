@@ -419,7 +419,7 @@ In alphabetical order.
 - Sebastian Andrzej Siewior
 - Sho Nakatani @laysakura
 - Shoichi Kaji @skaji
-- Timothy Legge @timlegge 
+- Timothy Legge @timlegge
 - Todd Rinaldo @toddr
 - Uli Scholler
 

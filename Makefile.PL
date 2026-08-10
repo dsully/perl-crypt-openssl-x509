@@ -100,7 +100,24 @@ C_SRC
 
     require ExtUtils::Liblist;
     my (undef, undef, $ldloadlibs) = ExtUtils::Liblist->ext($trial_libs, 0);
-    my @extra_linker_flags = $builder->split_like_shell($ldloadlibs);
+
+    # A real XS module build implicitly gets Perl's own system libraries
+    # (e.g. -lws2_32 on Windows, needed by OpenSSL's static libs for
+    # Winsock symbols) via linking against libperl. This standalone trial
+    # program doesn't link against libperl, so without adding them back
+    # explicitly, the trial can fail with unresolved system symbols on a
+    # platform where the real build would succeed. $Config{perllibs} (or
+    # $Config{libs}) is the portable source for this, but isn't reliably
+    # populated on every Windows perl distribution, so also fall back to
+    # OpenSSL's own well-known Windows system dependencies explicitly
+    # (harmless no-ops elsewhere: unused/duplicate flags, never referenced).
+    my $perllibs = defined $Config{perllibs} ? $Config{perllibs} : $Config{libs};
+    my @platform_libs = $^O =~ /MSWin32|msys|cygwin/i
+      ? qw(-lws2_32 -lgdi32 -lcrypt32 -luser32 -ladvapi32)
+      : ();
+    my @extra_linker_flags = $builder->split_like_shell(
+      join ' ', grep { defined && /\S/ } $ldloadlibs, $perllibs, @platform_libs
+    );
 
     my $ok = eval {
       my $obj = $builder->compile(
