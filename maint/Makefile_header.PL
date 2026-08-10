@@ -58,14 +58,14 @@ if ($Config{myuname} =~ /sunos|solaris/i) {
 # Do a throwaway compile+link here so we can fail fast with a clear
 # diagnostic instead.
 unless ($ENV{PERL_CRYPT_OPENSSL_X509_SKIP_OPENSSL_CHECK}) {
-  require ExtUtils::CBuilder;
-  require File::Temp;
+  unless (eval { require ExtUtils::CBuilder; require File::Temp; 1 }) {
+    warn "Skipping OpenSSL link check: ExtUtils::CBuilder unavailable ($@)\n";
+  } else {
+    my $dir = File::Temp::tempdir(CLEANUP => 1);
+    my $src = "$dir/openssl_check.c";
 
-  my $dir = File::Temp::tempdir(CLEANUP => 1);
-  my $src = "$dir/openssl_check.c";
-
-  open my $fh, '>', $src or die "Can't write $src: $!";
-  print {$fh} <<'C_SRC';
+    open my $fh, '>', $src or die "Can't write $src: $!";
+    print {$fh} <<'C_SRC';
 #include <openssl/x509.h>
 #include <openssl/err.h>
 
@@ -78,33 +78,37 @@ int main(void) {
     return 0;
 }
 C_SRC
-  close $fh;
+    close $fh or die "Can't write $src: $!";
 
-  my $trial_inc  = $args{INC} || '';
-  my $trial_libs = $args{LIBS}[0] || '';
+    my $trial_inc  = $args{INC} || '';
+    my $trial_libs = $args{LIBS}[0] || '';
 
-  my $builder = ExtUtils::CBuilder->new(quiet => 1);
+    my $builder = ExtUtils::CBuilder->new(quiet => 1);
 
-  my @extra_compiler_flags = $builder->split_like_shell(
-    join ' ', grep { defined && length } $trial_inc, $args{CCFLAGS}, $args{OPTIMIZE}
-  );
-  my @extra_linker_flags = $builder->split_like_shell($trial_libs);
-
-  my $ok = eval {
-    my $obj = $builder->compile(
-      source               => $src,
-      extra_compiler_flags => \@extra_compiler_flags,
+    my @extra_compiler_flags = grep { $_ ne '-Werror' } $builder->split_like_shell(
+      join ' ', grep { defined && length } $trial_inc, $args{CCFLAGS}, $args{OPTIMIZE}
     );
-    $builder->link_executable(
-      objects            => [$obj],
-      extra_linker_flags => \@extra_linker_flags,
-    );
-    1;
-  };
-  my $err = $@ || '(no error captured)';
 
-  unless ($ok) {
-    warn <<"DIAG";
+    require ExtUtils::Liblist;
+    my (undef, undef, $ldloadlibs) = ExtUtils::Liblist->ext($trial_libs, 0);
+    my @extra_linker_flags = $builder->split_like_shell($ldloadlibs);
+
+    my $ok = eval {
+      my $obj = $builder->compile(
+        source               => $src,
+        extra_compiler_flags => \@extra_compiler_flags,
+      );
+      $builder->link_executable(
+        objects            => [$obj],
+        extra_linker_flags => \@extra_linker_flags,
+      );
+      1;
+    };
+    my $err = $@ || '(no error captured)';
+    $err =~ s/ at \S+ line \d+\.?\n?\z//;
+
+    unless ($ok) {
+      warn <<"DIAG";
 
 *** OpenSSL could not be found or linked ***
 
@@ -131,6 +135,7 @@ background on this failure mode.
 check and proceed anyway.)
 DIAG
 
-    die "OpenSSL not found or not linkable - aborting Makefile.PL\n";
+      die "OpenSSL not found or not linkable - aborting Makefile.PL\n";
+    }
   }
 }
