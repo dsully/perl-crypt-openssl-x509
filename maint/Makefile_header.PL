@@ -102,9 +102,10 @@ C_SRC
     # populated on every Windows perl distribution, so also fall back to
     # OpenSSL's own well-known Windows system dependencies explicitly
     # (harmless no-ops elsewhere: unused/duplicate flags, never referenced).
+    # -lbcrypt: OpenSSL 4.x's static libcrypto calls BCryptGenRandom.
     my $perllibs = defined $Config{perllibs} ? $Config{perllibs} : $Config{libs};
     my @platform_libs = $^O =~ /MSWin32|msys|cygwin/i
-      ? qw(-lws2_32 -lgdi32 -lcrypt32 -luser32 -ladvapi32)
+      ? qw(-lws2_32 -lgdi32 -lcrypt32 -luser32 -ladvapi32 -lbcrypt)
       : ();
     my @extra_linker_flags = $builder->split_like_shell(
       join ' ', grep { defined && /\S/ } $ldloadlibs, $perllibs, @platform_libs
