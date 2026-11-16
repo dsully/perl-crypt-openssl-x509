@@ -1,5 +1,11 @@
 # Revision history for Perl extension Crypt::OpenSSL::X509
 
+## 2.1.6 UNRELEASED
+
+- Fixed building on Windows with MSYS2 MinGW Perl against OpenSSL 4.x. OpenSSL's static `libcrypto.a` there references CryptoAPI certificate-store functions (`CertOpenSystemStoreW`, `CertFindCertificateInStore`, etc.) and `BCryptGenRandom`, but Perl's own link libraries include neither `crypt32` nor `bcrypt`, so linking `X509.dll` failed with "undefined reference" errors. `Makefile.PL` now adds `-lcrypt32 -lbcrypt` on `MSWin32`, and the OpenSSL trial link check introduced in 2.1.5 also links `bcrypt`, so it no longer wrongly reports "OpenSSL not found or not linkable" on these systems. Strawberry Perl builds are unaffected and continue to pass. See PRs [#152](https://github.com/dsully/perl-crypt-openssl-x509/pull/152) and [#153](https://github.com/dsully/perl-crypt-openssl-x509/pull/153). Contributed by @jonasbn with co-authoring from Claude
+
+- Fixed the MSYS2/MinGW CI workflow, which had never actually built or tested the module. It ran MSYS's `make` against a Makefile generated for MinGW Perl, which expects `mingw32-make`, so every build and test command was silently skipped and the job passed regardless. The workflow now uses `mingw32-make` and runs the full test suite. It also installs `mingw-w64-x86_64-make` explicitly, since MSYS2 removed it from the `mingw-w64-x86_64-toolchain` package group. Contributed by @jonasbn with co-authoring from Claude
+
 ## 2.1.5 2026-08-10
 
 - `Makefile.PL` now fails fast with a clear diagnostic when OpenSSL development files can't be found, instead of proceeding to a `make` that fails hundreds of lines into a wall of "undefined reference" linker errors. `maint/Makefile_header.PL` performs a throwaway compile+link trial against `openssl/x509.h` using the exact `INC`/`LIBS` flags that will be passed to `WriteMakefile`; on failure it aborts with the compile/link commands, captured compiler output, the guessed flags, and remediation steps (`OPENSSL_PREFIX`, OS dev package). An escape hatch (`PERL_CRYPT_OPENSSL_X509_SKIP_OPENSSL_CHECK=1`) is provided for packagers/CI with unusual-but-correct setups. Closes [#67](https://github.com/dsully/perl-crypt-openssl-x509/issues/67). Contributed by @jonasbn with co-authoring from Claude
